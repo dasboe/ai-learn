@@ -18,11 +18,12 @@ The goal: **get better at working with AI — in whatever way is useful to you.*
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
 - A Claude subscription that includes Claude Code (Pro, Max, or Team)
-- A terminal — Claude handles the rest
+- An editor — **[Visual Studio Code](https://code.visualstudio.com/)** with the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code) is recommended, but any editor with Claude Code support works (terminal, JetBrains, etc.)
 
-> **Complete beginner?** If the terminal feels scary, ask someone to help you
-> with the three setup steps below. Once Claude is running, it takes over and
-> guides you at your pace.
+> **Complete beginner?** Use Visual Studio Code — it's free, and the Claude Code
+> extension gives you everything in one window. Ask someone to help you with the
+> setup steps below if needed. Once Claude is running, it takes over and guides
+> you at your pace.
 
 ## Get Started
 
@@ -33,10 +34,9 @@ cd my-ai-learning
 ```
 
 **Every session (including the first):**
-```bash
-claude
-```
-Then type `/start`. The first time, Claude interviews you and sets up your project. Every time after, it picks up where you left off. One concept, one deliverable. When you're done, close Claude.
+Open the folder in VS Code, open the Claude Code panel, and type `/start`. From the terminal, you can also just run `claude` in the project folder.
+
+The first time, Claude interviews you and sets up your project. Every time after, it picks up where you left off. One concept, one deliverable. When you're done, close the session.
 
 Everything adapts — content, complexity, pace, language. An electrician might use AI to write client proposals in seconds. A lawyer might build an AI-assisted contract review workflow. A designer might go from Figma to working prototype without waiting on developers. A retired teacher might explore AI out of pure curiosity. A developer might have a full-stack app running by session five. All are valid paths.
 
