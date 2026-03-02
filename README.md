@@ -28,7 +28,7 @@ The goal: **get better at working with AI — in whatever way is useful to you.*
 
 **Setup (once):**
 ```bash
-git clone <repo-url> my-ai-learning
+git clone https://github.com/dasboe/ai-learn.git my-ai-learning
 cd my-ai-learning
 ```
 
