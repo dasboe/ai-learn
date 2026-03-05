@@ -1,6 +1,7 @@
 # AI-LERN
 
 Learn to work with AI — at your level, at your pace.
+Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
 ## Quickstart
 
@@ -20,62 +21,63 @@ That's it. No terminal, no git, no setup knowledge needed.
 
 ## What This Is
 
-A learning framework where AI adapts to **you**. Whether you run a business, practice law, design interfaces, or write code — you start here, and the AI figures out what to teach you and what to create.
+A Claude Code project that turns Claude into your personal AI tutor. It adapts to **you** — whether you run a business, practice law, design interfaces, or write code.
 
 **How it works:**
-1. Open Claude, type `/start` — the first time, Claude interviews you (5 min) to understand your level, your work, and your goals
+1. Open Claude Code, type `/start` — the first time, Claude interviews you (5 min) to understand your level, your work, and your goals
 2. Claude sets up a personalized learning path — adapted to what you do, not just what you know
-3. Each session: open Claude, type `/start`, learn one thing, build one thing, close Claude
-4. Every time the same: open, `/start`, learn, build, close
+3. Each session: open Claude Code, type `/start`, learn one thing, build one thing, type `/end`
+4. Every time the same: open, `/start`, learn, build, `/end`
 
 The goal: **get better at working with AI — in whatever way is useful to you.**
 
 ## What You Need
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
+- **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — this project runs entirely inside Claude Code
 - A Claude subscription that includes Claude Code (Pro, Max, or Team)
-- An editor — **[Visual Studio Code](https://code.visualstudio.com/)** with the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code) is recommended, but any editor with Claude Code support works (terminal, JetBrains, etc.)
+- **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)** (recommended)
 
-> **Complete beginner?** Use Visual Studio Code — it's free, and the Claude Code
-> extension gives you everything in one window. Ask someone to help you with the
-> setup steps below if needed. Once Claude is running, it takes over and guides
-> you at your pace.
+> **Complete beginner?** VS Code is free, and the Claude Code extension gives you
+> everything in one window. Ask someone to help you install it. Once Claude Code
+> is running, it takes over and guides you at your pace.
 
 ## Alternative: Git Clone
 
-If you prefer the traditional route:
+If you know git:
 
 ```bash
 git clone https://github.com/dasboe/ai-learn.git my-ai-learning
 cd my-ai-learning
 ```
 
-Then open the folder in VS Code, open Claude Code, and type `/start`.
+Open the folder in VS Code, open Claude Code, type `/start`.
+
+## How It Adapts
 
 Everything adapts — content, complexity, pace, language. An electrician might use AI to write client proposals in seconds. A lawyer might build an AI-assisted contract review workflow. A designer might go from Figma to working prototype without waiting on developers. A retired teacher might explore AI out of pure curiosity. A developer might have a full-stack app running by session five. All are valid paths.
 
 ## Project Structure
 
-You start with just two files. After your first session:
+After your first session, Claude Code creates:
 
 ```
 my-ai-learning/
-├── CLAUDE.md              ← adapts to you after profiling
-├── learner-profile.md     ← your profile, created in the interview
-├── progression.md         ← tracks where you are in your learning journey
+├── CLAUDE.md              <- drives Claude Code's behavior, adapts to you
+├── learner-profile.md     <- your profile, created in the interview
+├── progression.md         <- tracks your learning journey
 ├── sessions/
 │   └── session-01/
-│       └── README.md      ← what you learned and built
-└── [your project]         ← grows session by session
+│       └── README.md      <- what you learned and built
+└── project/               <- your learning project, grows session by session
 ```
 
 ## FAQ
 
 **What will I learn?**
-How to work with AI effectively — starting with good prompting, then progressively deeper based on your background. The AI figures out what's relevant for you: practical text workflows for your job, design-to-code prototyping, data automation, or full Claude Code mastery with advanced features. It depends on who you are.
+How to work with AI effectively — starting with good prompting, then progressively deeper based on your background. Claude Code figures out what's relevant for you: practical text workflows, design-to-code prototyping, data automation, or full Claude Code mastery with CLAUDE.md, custom commands, and hooks. It depends on who you are.
 
 **Do I need to know how to code?**
-No. The AI adapts to your background and profession — not just your tech level. A tradesperson gets AI tools for proposals and client communication. A designer gets prototyping workflows. A developer gets a full-stack coding partner. And everyone learns at their own pace — fast thinkers move fast, regardless of technical experience.
+No. Claude Code adapts to your background and profession — not just your tech level. A tradesperson gets AI tools for proposals and client communication. A designer gets prototyping workflows. A developer gets a full-stack coding partner. Everyone learns at their own pace.
 
 **What language does this work in?**
 Any. Claude detects your language from your first message and matches it.
@@ -84,7 +86,7 @@ Any. Claude detects your language from your first message and matches it.
 Anytime. The learning path isn't a fixed curriculum — tell Claude what you want and it adjusts.
 
 **What's the meta-concept?**
-You learn to work with AI by actually working with AI. Every session produces something real — a document, a script, a tool, an app. The learning IS the doing. There's no theory module you have to sit through first.
+You learn to work with AI by working with AI. Every session produces something real — a document, a script, a tool, an app. The learning IS the doing. There's no theory module you have to sit through first.
 
 ---
 
