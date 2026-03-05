@@ -112,13 +112,14 @@ The interview instructions (profiling questions, profile writing guide, reframin
 
 ---
 
-## Why no MCP / Context7 in the bootstrap
+## Why no external MCPs (Context7 etc.) in the bootstrap
 
 Context7 provides live library documentation — invaluable for technical learners working with frameworks. But:
 
 - Non-technical and semi-technical learners don't use libraries. Context7 adds zero value for them.
-- Adding `.claude/settings.json` makes the bootstrap more complex for everyone to benefit a subset.
 - MCP is better introduced as a SESSION TOPIC: "Today we learn how to extend Claude Code — and install our first tool." The learner understands WHY it's there instead of just having it.
+
+The internal `ai-learn-state` MCP server is a different case — it manages learner state silently and is part of the bootstrap infrastructure. External MCPs like Context7 are teaching content, not infrastructure.
 
 This is a conscious tradeoff: minimal bootstrap > pre-configured bootstrap.
 
@@ -386,19 +387,21 @@ The original `start.md` included a "Context: Two-dimension model" section re-exp
 ```
 bootstrap/
 ├── README.md                        → For users. Setup instructions, FAQ.
-├── bootstrap.md                     → Self-bootstrapping instructions (paste URL into Claude Code).
+├── bootstrap.md                     → URL entry point: clone instructions for fresh Claude Code instances.
 ├── CLAUDE.md                        → For Claude. System rules + learner config + MCP tool table.
 ├── DESIGN.md                        → For developers/AI. This file. Design rationale.
+├── .mcp.json                        → Project-local MCP server registration (auto-detected by Claude Code).
 ├── .gitignore                       → Standard ignores (node_modules, .env, .DS_Store, .settings/coach/)
 ├── .settings/
 │   ├── coach/
 │   │   └── README.md                → Coach workflow documentation.
 │   └── mcp-server/
 │       ├── package.json             → MCP server package (dependency: @modelcontextprotocol/sdk)
-│       └── index.js                 → MCP server: 14 whitelisted tools for learner state I/O.
+│       └── index.js                 → MCP server: single `state` tool for all learner state I/O.
 └── .claude/
-    ├── settings.json                → Registers ai-learn-state MCP server.
+    ├── settings.json                → Auto-approves ai-learn-state MCP tool.
     └── commands/
+        ├── bootstrap.md             → Setup flow: cleanup, npm install, restart instructions.
         ├── start.md                 → Router: routes to interview / graduated / session flow.
         ├── start-session.md         → Flow: returning pre-graduation session (integrity check, orient, research, plan, brief).
         ├── start-graduated.md       → Flow: post-graduation session (orient, research, greet, work together).
@@ -810,31 +813,31 @@ Both problems get worse over time. Early sessions write fewer files. By session 
 
 ### The solution: a project-local MCP server
 
-The `.settings/mcp-server/` directory contains a Node.js MCP server (`ai-learn-state`) that exposes 14 tools — each hardcoded to exactly one file path. No generic read/write. No path parameters (except session number and reference name, which are validated against strict patterns).
+The `.settings/mcp-server/` directory contains a Node.js MCP server (`ai-learn-state`) that exposes a single `state` tool with three parameters:
 
-| Tool | File | Operation |
+```
+state(action: "read"|"write"|"append", file: "<key>", content?: "<text>")
+```
+
+File keys map to hardcoded paths — no arbitrary file access:
+
+| Key | File | Allowed actions |
 |---|---|---|
-| `read_profile` | `.settings/learner-profile.md` | Read |
-| `write_profile` | `.settings/learner-profile.md` | Write |
-| `read_progression` | `.settings/progression.md` | Read |
-| `write_progression` | `.settings/progression.md` | Write |
-| `read_coach_notes` | `.settings/coach/notes.md` | Read |
-| `append_coach_flags` | `.settings/coach/flags.md` | Append |
-| `read_claude_md` | `CLAUDE.md` | Read |
-| `write_claude_md` | `CLAUDE.md` | Write |
-| `read_bootstrap_backup` | `.settings/CLAUDE.md.bootstrap` | Read |
-| `write_bootstrap_backup` | `.settings/CLAUDE.md.bootstrap` | Write (once — refuses if file exists) |
-| `read_session_readme` | `sessions/session-{NN}/README.md` | Read |
-| `write_session_readme` | `sessions/session-{NN}/README.md` | Write (creates directory) |
-| `read_reference` | `reference/{name}.md` | Read |
-| `write_reference` | `reference/{name}.md` | Write |
+| `profile` | `.settings/learner-profile.md` | read, write |
+| `progression` | `.settings/progression.md` | read, write |
+| `coach-notes` | `.settings/coach/notes.md` | read |
+| `coach-flags` | `.settings/coach/flags.md` | append |
+| `claude-md` | `CLAUDE.md` | read, write |
+| `bootstrap` | `.settings/CLAUDE.md.bootstrap` | read, write (one-time) |
+| `session-NN` | `sessions/session-{NN}/README.md` | read, write |
+| `ref-{name}` | `reference/{name}.md` | read, write |
 
 ### Why these restrictions
 
-- **No generic file access.** A tool that accepts arbitrary paths would be a security risk and defeats the purpose of whitelisting. Each tool knows its one file.
+- **No generic file access.** A tool that accepts arbitrary paths would be a security risk and defeats the purpose of whitelisting. Each key maps to exactly one file.
 - **Append-only for coach flags.** Claude should never overwrite existing flags — only append new ones. The coach manages the file.
 - **Write-once for bootstrap backup.** The backup is created once during profiling. If it already exists, the tool refuses. This prevents accidental overwrites of the original CLAUDE.md template.
-- **Session number validation.** Must be exactly two digits (`01`-`99`). Reference names must be lowercase alphanumeric with hyphens. No path traversal possible.
+- **Key validation.** Session numbers must be exactly two digits (`01`-`99`). Reference names must be lowercase alphanumeric with hyphens. No path traversal possible.
 - **Path safety.** All resolved paths are checked to stay within the project root.
 
 ### Why Node.js
@@ -843,15 +846,16 @@ Claude Code requires Node.js — it's a prerequisite. Anyone running Claude Code
 
 ### What the learner experiences
 
-MCP tool calls don't show file content in the chat. The learner sees "Claude used a tool" (if they look at the tool activity) but not the content being read or written. No permission prompts for MCP tools configured in project settings. The session flow feels seamless — Claude reads state, plans, teaches, writes state, all without interrupting the learner.
+MCP tool calls don't show file content in the chat. The learner sees "Claude used a tool" (if they look at the tool activity) but not the content being read or written. No permission prompts for MCP tools auto-approved in `.claude/settings.json`. The session flow feels seamless — Claude reads state, plans, teaches, writes state, all without interrupting the learner.
 
 ### Integration
 
-- `.claude/settings.json` registers the MCP server (`node mcp-server/index.js`)
-- CLAUDE.md § "Learner State — MCP Tools" contains the tool table and the rule: "Never use Read/Write/Edit for these files"
+- `.mcp.json` registers the MCP server (auto-detected by Claude Code, no manual setup)
+- `.claude/settings.json` auto-approves the `state` tool (no permission prompts)
+- CLAUDE.md § "Learner State — MCP Tools" contains the key table and the rule: "Never use Read/Write/Edit for these files"
 - All flow files reference CLAUDE.md § Learner State at the top
-- Routers (`start.md`, `end.md`) use `read_profile` / `read_progression` explicitly for routing decisions
-- Bootstrap must run `npm install` in `.settings/mcp-server/` during setup
+- Routers (`start.md`, `end.md`) use `state(action: "read", file: "profile")` / `state(action: "read", file: "progression")` for routing decisions
+- Bootstrap runs `npm install` in `.settings/mcp-server/` during setup
 
 ---
 
@@ -871,6 +875,6 @@ MCP tool calls don't show file content in the chat. The learner sees "Claude use
 
 7. **The coach layer depends on a human actually coaching.** If `.settings/coach/notes.md` exists but the coach stops reviewing flags or updating notes, Claude continues autonomously — which is the baseline behavior anyway. The system degrades gracefully: without a coach, it works exactly as before. But stale coach-notes that contradict the learner's current state could misdirect Claude. A coach who stops coaching should delete `.settings/coach/notes.md` rather than leave outdated instructions in place.
 
-8. **MCP server adds a setup step.** The learner state MCP server requires `npm install` in `.settings/mcp-server/` before first use. The bootstrap handles this automatically, but manual git-clone users must run it themselves. If `npm install` fails or `node_modules/` is missing, Claude falls back to built-in Read/Write tools — which works but brings back permission prompts and state visibility.
+8. **MCP server adds a setup step.** The learner state MCP server requires `npm install` in `.settings/mcp-server/` before first use. The `/bootstrap` command handles this automatically, but manual git-clone users must run it themselves. The server is registered via `.mcp.json` (auto-detected by Claude Code), so no manual `claude mcp add` is needed. If `npm install` fails or `node_modules/` is missing, `/start` detects the problem and tells the user what to do.
 
 9. **`project/` is not a standalone Claude Code project.** Claude Code reads `.claude/settings.json` from the working directory. Since sessions run from the learning repo root (where `/start` and `/end` live), `project/` is just a subdirectory — not an independent Claude Code context. This means hooks, permissions, and settings intended for the learner's project must live in the root `.claude/settings.json`, not in `project/.claude/settings.json`. The learner effectively learns a wrong pattern: "my project's hooks live one level above my project." In real-world use, `project/` would be the repo root. This is a fundamental tension between two requirements: the learning system needs to run from root (for skill routing), but the learner's project needs its own configuration scope (for realistic Claude Code usage). After graduation this resolves naturally — the learner works in their own repo. Pre-graduation, it remains an unsolved architectural limitation. Discovered in Session 04 (Hooks) when a learner identified the mismatch independently.
