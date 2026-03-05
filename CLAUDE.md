@@ -14,7 +14,7 @@ The AI adapts everything to you — from your first prompt to full-stack apps.
 
 Each session runs in a fresh Claude instance. At the start of every conversation:
 
-1. If `.settings/coach/notes.md` exists → use `read_coach_notes` to read it silently. Coach instructions apply to the entire conversation.
+1. If `.settings/coach/notes.md` exists → use `state(action: "read", file: "coach-notes")` to read it silently. Coach instructions apply to the entire conversation.
 2. Prompt the user to type `/start`.
 
 The `/start` skill handles everything. Do not start teaching, interviewing, or planning without it.
@@ -58,20 +58,24 @@ If you catch yourself opening files outside this project folder, stop. If the le
 
 ## Learner State — MCP Tools
 
-All learner state files are managed through the `ai-learn-state` MCP server (registered via `claude mcp add`, auto-detected by `/start`). **Never use Read/Write/Edit tools for these files — always use the corresponding MCP tool:**
+All learner state files are managed through the `ai-learn-state` MCP server's single `state` tool. **Never use Read/Write/Edit tools for these files — always use `state`:**
 
-| File | Read | Write |
+```
+state(action: "read"|"write"|"append", file: "<key>", content?: "<text>")
+```
+
+| Key | File | Allowed actions |
 |---|---|---|
-| `.settings/learner-profile.md` | `read_profile` | `write_profile` |
-| `.settings/progression.md` | `read_progression` | `write_progression` |
-| `.settings/coach/notes.md` | `read_coach_notes` | — |
-| `.settings/coach/flags.md` | — | `append_coach_flags` |
-| `CLAUDE.md` | `read_claude_md` | `write_claude_md` |
-| `.settings/CLAUDE.md.bootstrap` | `read_bootstrap_backup` | `write_bootstrap_backup` |
-| `sessions/session-{NN}/README.md` | `read_session_readme` | `write_session_readme` |
-| `reference/{name}.md` | `read_reference` | `write_reference` |
+| `profile` | `.settings/learner-profile.md` | read, write |
+| `progression` | `.settings/progression.md` | read, write |
+| `coach-notes` | `.settings/coach/notes.md` | read |
+| `coach-flags` | `.settings/coach/flags.md` | append |
+| `claude-md` | `CLAUDE.md` | read, write |
+| `bootstrap` | `.settings/CLAUDE.md.bootstrap` | read, write (one-time) |
+| `session-NN` | `sessions/session-{NN}/README.md` | read, write |
+| `ref-{name}` | `reference/{name}.md` | read, write |
 
-These tools run silently — the learner never sees the content of state files.
+The tool runs silently — the learner never sees the content of state files.
 
 ---
 
@@ -112,7 +116,7 @@ Session 01 for non-technical learners: prefer conversation over tool use. The fi
 
 - **One session = one Claude instance.** Each session starts with `/start` and ends with `/end`. No multi-session conversations.
 - Always wait for `/start` before doing anything — don't begin teaching, interviewing, or planning on your own
-- Use MCP tools (not Read/Write/Edit) for all learner state files — see table above
+- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files — see table above
 - Announce tool use to the learner before triggering permission prompts — see Tool Announcements matrix
 - Read `.settings/coach/notes.md` at session start if it exists — coach instructions override defaults
 - Match the user's language in all communication
@@ -120,7 +124,7 @@ Session 01 for non-technical learners: prefer conversation over tool use. The fi
 - Short chat messages — depth goes in session docs
 - Every session produces something the learner can see or use
 - Adapt to the human's pace, not the other way around
-- Keep everything project-local (exception: `claude mcp add` for MCP server registration writes to `~/.claude.json` — this is expected)
+- Keep everything project-local (never modify ~/.claude/settings.json)
 - This CLAUDE.md evolves — update it when the project scope changes
 - **Never work on the learner's real-world project.** Build concepts hands-on in the learning project instead.
 
