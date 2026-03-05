@@ -41,31 +41,21 @@ Claude sets everything up and tells you what to do next.
 - If the current directory is NOT empty, create a subdirectory called `ai-learn` and work inside it.
 - If the current directory is empty, use it directly.
 
-### 2. Fetch project files
+### 2. Clone and clean up
 
-Fetch each file from `https://raw.githubusercontent.com/dasboe/ai-learn/main/` and write it to the target directory. Use WebFetch for each URL.
+Run these two commands in a single Bash call (chain with `&&`):
 
-**Files to fetch:**
-
-```
-CLAUDE.md
-README.md
-.gitignore
-.coach/README.md
-.claude/commands/start.md
-.claude/commands/end.md
-.claude/commands/end-session.md
-.claude/commands/end-graduated.md
-.claude/commands/interview.md
-.claude/commands/start-session.md
-.claude/commands/start-graduated.md
+```bash
+git clone https://github.com/dasboe/ai-learn.git . && rm -f DESIGN.md bootstrap.md
 ```
 
-Do NOT fetch `DESIGN.md` or `bootstrap.md` — those are development docs.
+If the directory is not empty (step 1 created a subdirectory), clone into that subdirectory instead:
 
-### 3. Initialize git
+```bash
+git clone https://github.com/dasboe/ai-learn.git ai-learn && rm -f ai-learn/DESIGN.md ai-learn/bootstrap.md
+```
 
-Run `git init` in the target directory so the learner has version control for their progress.
+This gives the learner all project files plus git history in one step. `DESIGN.md` and `bootstrap.md` are removed because they are development docs, not needed for learning.
 
 ### 4. Done
 
