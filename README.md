@@ -4,14 +4,15 @@ Learn to work with AI — at your level, at your pace.
 
 ## Quickstart
 
-1. Open **VS Code** with the **Claude Code extension**
-2. Paste this into the Claude Code chat:
+1. Create a **new, empty folder** on your computer
+2. Open that folder in **VS Code**
+3. Open the **Claude Code** panel and paste this:
 
 ```
 https://github.com/dasboe/ai-learn/blob/main/bootstrap.md
 ```
 
-3. Claude sets everything up. Then close this instance, reopen Claude Code, and type `/start`.
+4. Claude sets everything up. When it's done, **close Claude Code**, reopen it in the same folder, and type `/start`.
 
 That's it. No terminal, no git, no setup knowledge needed.
 
