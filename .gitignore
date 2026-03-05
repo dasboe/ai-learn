@@ -3,4 +3,7 @@ node_modules/
 .env.*
 .DS_Store
 *.log
-.coach/
+.settings/coach/
+.settings/learner-profile.md
+.settings/progression.md
+.settings/CLAUDE.md.bootstrap

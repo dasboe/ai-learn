@@ -2,6 +2,8 @@
 
 The learner has graduated — they work independently with Claude Code. The session model changes fundamentally.
 
+**All state file operations use MCP tools — see CLAUDE.md § Learner State.**
+
 ---
 
 ## What changed at Graduation
@@ -18,9 +20,9 @@ The learner has graduated — they work independently with Claude Code. The sess
 ## Step 1 — Orient (silent)
 
 Read:
-- `learner-profile.md`
-- `progression.md`
-- `.coach/notes.md` (if exists — coach instructions override defaults)
+- `.settings/learner-profile.md`
+- `.settings/progression.md`
+- `.settings/coach/notes.md` (if exists — coach instructions override defaults)
 
 Know who you're working with and what happened last time.
 

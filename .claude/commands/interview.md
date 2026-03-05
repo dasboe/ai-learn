@@ -1,6 +1,8 @@
 # Interview — First-Time Setup
 
-This file is read by the `/start` skill when no `learner-profile.md` exists. It contains everything needed to run the profiling interview, create the learner profile, set up the project, and start Session 01.
+This file is read by the `/start` skill when no `.settings/learner-profile.md` exists. It contains everything needed to run the profiling interview, create the learner profile, set up the project, and start Session 01.
+
+**All state file operations use MCP tools — see CLAUDE.md § Learner State.**
 
 ---
 
@@ -87,11 +89,11 @@ From the interview, assess two independent dimensions:
 
 ## After the interview — setup steps
 
-### 1. Write `learner-profile.md`
+### 1. Write `.settings/learner-profile.md`
 Strengths first, then technical starting point, then learning preferences. Show it to the user, ask for confirmation.
 
 ### 2. Save a backup
-Copy `CLAUDE.md` to `CLAUDE.md.bootstrap` (so the original template can always be restored).
+Copy `CLAUDE.md` to `.settings/CLAUDE.md.bootstrap` (so the original template can always be restored).
 
 ### 3. Personalize `CLAUDE.md`
 Replace the three `[ADAPT]` placeholders based on the two dimensions:
@@ -116,12 +118,9 @@ Replace the three `[ADAPT]` placeholders based on the two dimensions:
 - Steady: "30 min sessions. German. Very guided, one small concept per session, always check understanding before moving on. Visible wins every session."
 - Fast: "60 min sessions. German. Ambitious, conceptual depth, challenge me. I'll say if it's too much."
 
-Also update the bootstrap notice: replace the "This is the bootstrap version" blockquote with `> Personalisiert für den Lerner. Original-Template: \`CLAUDE.md.bootstrap\``
+Also update the bootstrap notice: replace the "This is the bootstrap version" blockquote with `> Personalisiert für den Lerner. Original-Template: \`.settings/CLAUDE.md.bootstrap\``
 
-### 4. Create `reference/profiling-guide.md`
-Extract the profile writing rules (reframing guide, profile structure) into this file. This becomes the reference for future profile updates.
-
-### 5. Create `progression.md`
+### 4. Create `.settings/progression.md`
 Use these templates as a starting point — then translate them into the learner's world. An electrician's Phase 2 is "Angebote und Kundenkommunikation gezielt steuern", not "Prompt-Patterns lernen."
 
 **Non-technical:**
@@ -146,12 +145,12 @@ Use these templates as a starting point — then translate them into the learner
 3. Erweiterte Features — MCPs, Hooks, Skills nach Bedarf
 4. Architektur — Subagents, komplexe Workflows, Team-Integration
 
-Phases are hypotheses. They are reviewed after every session in `progression.md` and rewritten when they no longer fit.
+Phases are hypotheses. They are reviewed after every session in `.settings/progression.md` and rewritten when they no longer fit.
 
-### 6. Create the project structure
-Directories: `sessions/`, `reference/`, `project/`. The `.coach/` directory with its README already exists in the project template.
+### 5. Create the project structure
+Directories: `sessions/`, `reference/`, `project/`. The `.settings/coach/` directory with its README already exists in the project template.
 
-### 7. Start Session 01
+### 6. Start Session 01
 See below.
 
 ---

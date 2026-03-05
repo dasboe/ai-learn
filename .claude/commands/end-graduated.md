@@ -2,7 +2,9 @@
 
 End-of-session checklist for graduated learners.
 
-Read `learner-profile.md` and `progression.md` before starting. Determine current session number from Sessions Log in `CLAUDE.md`.
+**All state file operations use MCP tools — see CLAUDE.md § Learner State.**
+
+Read profile and progression via `read_profile` and `read_progression` before starting. Determine current session number from Sessions Log via `read_claude_md`.
 
 ---
 
@@ -73,7 +75,7 @@ Read last 2–3 Verlauf entries.
 
 | Situation | Action |
 |---|---|
-| Consistent mismatch over 2–3 sessions | Update `learner-profile.md` using `reference/profiling-guide.md` |
+| Consistent mismatch over 2–3 sessions | Update `.settings/learner-profile.md` using `.settings/profiling-guide.md` |
 | Single-session deviation | Note it, don't update yet |
 
 ---
@@ -88,7 +90,7 @@ Only flag what you cannot resolve through the progression review.
 | Signs of frustration or disengagement | Normal project challenges |
 | Learner may benefit from guided sessions again | Minor questions |
 
-Format: Append to `.coach/flags.md`:
+Format: Append to `.settings/coach/flags.md`:
 ```markdown
 ### Session {NN} — {date}
 - {specific observation — coach reads without session context}

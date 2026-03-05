@@ -2,7 +2,9 @@
 
 Complete end-of-session checklist for learners who have not yet graduated.
 
-Read `learner-profile.md` and `progression.md` before starting. Determine current session number from Sessions Log in `CLAUDE.md`.
+**All state file operations use MCP tools — see CLAUDE.md § Learner State.**
+
+Read profile and progression via `read_profile` and `read_progression` before starting. Determine current session number from Sessions Log via `read_claude_md`.
 
 ---
 
@@ -70,11 +72,11 @@ Update "Aktueller Stand" if the phase changed.
 
 ## Step 5 — Check if profile needs updating
 
-Read last 2–3 Verlauf entries in `progression.md`.
+Read last 2–3 Verlauf entries in `.settings/progression.md`.
 
 | Situation | Action |
 |---|---|
-| Consistent mismatch over 2–3 sessions | Update `learner-profile.md` using `reference/profiling-guide.md` |
+| Consistent mismatch over 2–3 sessions | Update `.settings/learner-profile.md` using `.settings/profiling-guide.md` |
 | Single-session deviation | Note it, don't update yet |
 | No mismatch | Skip |
 
@@ -82,7 +84,7 @@ Read last 2–3 Verlauf entries in `progression.md`.
 
 ## Step 5.5 — Graduation trigger
 
-Read last 2–3 Graduation-Check entries from `progression.md`.
+Read last 2–3 Graduation-Check entries from `.settings/progression.md`.
 
 ### Decision
 
@@ -103,8 +105,8 @@ Read last 2–3 Graduation-Check entries from `progression.md`.
 | Fast | Direct: "Du bist bereit für dein eigenes Projekt." |
 
 2. **If learner agrees:**
-   - Update `progression.md` "Aktueller Stand" → `Graduation erreicht — {date}`
-   - Flag to `.coach/flags.md`: `### Graduation — {date}` with signals observed
+   - Update `.settings/progression.md` "Aktueller Stand" → `Graduation erreicht — {date}`
+   - Flag to `.settings/coach/flags.md`: `### Graduation — {date}` with signals observed
    - Tell learner what changes: real project becomes workspace, learning env stays available
 
 3. **If learner declines:**
@@ -125,7 +127,7 @@ Only flag what you cannot resolve through the progression review.
 | Uncertain dimension assessment | Minor pace adjustment needed |
 | Something learner said needing coach follow-up | Routine observations (→ progression.md) |
 
-Format: Append to `.coach/flags.md`:
+Format: Append to `.settings/coach/flags.md`:
 ```markdown
 ### Session {NN} — {date}
 - {specific observation — coach reads without session context}

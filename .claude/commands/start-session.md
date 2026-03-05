@@ -2,7 +2,9 @@
 
 Flow for returning learners who have not yet graduated.
 
-`$ARGUMENTS` may contain a topic request — overrides the recommendation from `progression.md`.
+`$ARGUMENTS` may contain a topic request — overrides the recommendation from `.settings/progression.md`.
+
+**All state file operations use MCP tools — see CLAUDE.md § Learner State.**
 
 ---
 
@@ -14,14 +16,14 @@ A fresh instance validates system health before starting.
 
 | File | If missing |
 |---|---|
-| `learner-profile.md` | **Critical** — tell the user, stop. |
-| `progression.md` | Create minimal stub (phase: "Unknown"). Flag to coach. |
-| `CLAUDE.md.bootstrap` | Flag to coach. Skip drift check (B). |
+| `.settings/learner-profile.md` | **Critical** — tell the user, stop. |
+| `.settings/progression.md` | Create minimal stub (phase: "Unknown"). Flag to coach. |
+| `.settings/CLAUDE.md.bootstrap` | Flag to coach. Skip drift check (B). |
 | `sessions/` directory | Create it. Flag to coach. |
 
 ### B. CLAUDE.md drift check
 
-Compare `CLAUDE.md` against `CLAUDE.md.bootstrap` (if exists).
+Compare `CLAUDE.md` against `.settings/CLAUDE.md.bootstrap` (if exists).
 
 | Sections | Expected state | If wrong |
 |---|---|---|
@@ -31,14 +33,14 @@ Compare `CLAUDE.md` against `CLAUDE.md.bootstrap` (if exists).
 
 ### C. Progression size check
 
-If "Verlauf" in `progression.md` has >15 entries: compress (keep last 5 intact, summarize earlier ones). Flag compression to coach.
+If "Verlauf" in `.settings/progression.md` has >15 entries: compress (keep last 5 intact, summarize earlier ones). Flag compression to coach.
 
 ### D. Report
 
 | Result | Action |
 |---|---|
 | All checks pass | Continue silently |
-| Issues auto-repaired | Continue. Append to `.coach/flags.md`: `### Integrity Check — {date}` with what was found/repaired |
+| Issues auto-repaired | Continue. Append to `.settings/coach/flags.md`: `### Integrity Check — {date}` with what was found/repaired |
 | Critical (no profile) | Stop. Tell user. |
 
 ---
@@ -46,18 +48,18 @@ If "Verlauf" in `progression.md` has >15 entries: compress (keep last 5 intact, 
 ## Step 2 — Orient (silent)
 
 Read:
-- `learner-profile.md`
-- `progression.md`
-- `.coach/notes.md` (if exists — coach instructions override defaults)
+- `.settings/learner-profile.md`
+- `.settings/progression.md`
+- `.settings/coach/notes.md` (if exists — coach instructions override defaults)
 
 Extract:
 
 | What | Source |
 |---|---|
-| Tech level + pace | `learner-profile.md` |
+| Tech level + pace | `.settings/learner-profile.md` |
 | Last session number | Sessions Log in `CLAUDE.md` |
 | What was built last | Sessions Log in `CLAUDE.md` |
-| Next topic | "Nächster Schritt" in `progression.md` |
+| Next topic | "Nächster Schritt" in `.settings/progression.md` |
 
 If `$ARGUMENTS` contains a topic or coach notes override → use that instead.
 
@@ -182,6 +184,7 @@ Third column filled by `/end`.
 - Build the deliverable together
 - One concept — don't overload
 - Every session produces something tangible
+- **Follow the Tool Announcements matrix** (CLAUDE.md) — announce file writes and bash commands before triggering permission prompts, especially for non-technical learners
 
 | Learner behavior | Response |
 |---|---|
