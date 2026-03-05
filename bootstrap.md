@@ -1,71 +1,31 @@
 # AI-LERN Bootstrap
 
-> **Paste this URL into Claude Code to get started.**
-> No terminal, no git, no setup knowledge needed.
+## Instructions for Claude Code
 
----
+When a user shares this URL or this file's content, follow these steps exactly.
 
-## How to Start
-
-1. Open **Visual Studio Code** (or any editor with Claude Code)
-2. Open the **Claude Code** panel
-3. Paste this URL into the chat:
-
-```
-https://github.com/dasboe/ai-learn/blob/main/bootstrap.md
-```
-
-Claude sets everything up and tells you what to do next.
-
-> **If Claude doesn't start automatically**, paste this instead:
->
-> `Richte mein AI-Lernprojekt ein. Folge den Anweisungen in: https://github.com/dasboe/ai-learn/blob/main/bootstrap.md`
-
----
-
-## What You Need
-
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
-- A Claude subscription (Pro, Max, or Team)
-- [Visual Studio Code](https://code.visualstudio.com/) with the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code) (recommended)
-
----
-
-## Setup Instructions for Claude Code
-
-**When a user shares this URL or this file's content, follow these steps:**
+Match the user's language (German if they wrote German, English if English, etc.)
 
 ### 1. Check the working directory
 
-- If the current directory already contains a `CLAUDE.md` file, skip setup. Tell the user to type `/start`.
-- If the current directory is NOT empty, create a subdirectory called `ai-learn` and work inside it.
-- If the current directory is empty, use it directly.
+| Situation | Action |
+|---|---|
+| Current directory contains a `CLAUDE.md` with "AI-LERN" content | Setup already done. Tell the user to type `/start`. **Stop.** |
+| Current directory is not empty | Create subdirectory `ai-learn`, clone into it |
+| Current directory is empty | Clone directly into current directory |
 
-### 2. Clone and clean up
+### 2. Clone the repo
 
-Run these two commands in a single Bash call (chain with `&&`):
-
+Into current directory:
 ```bash
-git clone https://github.com/dasboe/ai-learn.git . && rm -f DESIGN.md bootstrap.md
+git clone https://github.com/dasboe/ai-learn.git .
 ```
 
-If the directory is not empty (step 1 created a subdirectory), clone into that subdirectory instead:
-
+Into subdirectory:
 ```bash
-git clone https://github.com/dasboe/ai-learn.git ai-learn && rm -f ai-learn/DESIGN.md ai-learn/bootstrap.md
+git clone https://github.com/dasboe/ai-learn.git ai-learn
 ```
 
-This gives the learner all project files plus git history in one step. `DESIGN.md` and `bootstrap.md` are removed because they are development docs, not needed for learning.
+### 3. Run the bootstrap command
 
-### 4. Done
-
-Tell the user:
-
-- Setup is complete
-- **Close this Claude Code instance** and open a new one in the same folder
-- In the new instance, type `/start` to begin
-- Briefly explain: Claude will interview them once, then every session starts with `/start`
-
-Important: `/start` is a custom slash command that only works in a new Claude Code instance after the project files are in place. The current bootstrap instance cannot use it.
-
-Match the user's language (German if they wrote German, English if English, etc.)
+Read the file `.claude/commands/bootstrap.md` (or `ai-learn/.claude/commands/bootstrap.md` if cloned into subdirectory) from the freshly cloned repo and follow it from **Step 2** onward (skip Step 1 — you already handled that above, and skip cloning — you just did that).
