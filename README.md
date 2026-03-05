@@ -3,6 +3,10 @@
 Learn to work with AI — at your level, at your pace.
 Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
+## What This Is
+
+A Claude Code project that turns Claude into your personal AI tutor. It adapts to **you** — whether you run a business, practice law, design interfaces, or write code. Claude interviews you once, then builds a personalized learning path. Each session: one concept learned, one thing built.
+
 ## Quickstart
 
 **You need:**
@@ -28,17 +32,12 @@ That's it. No terminal, no git, no setup knowledge needed.
 
 ---
 
-## What This Is
+## How It Works
 
-A Claude Code project that turns Claude into your personal AI tutor. It adapts to **you** — whether you run a business, practice law, design interfaces, or write code.
-
-**How it works:**
-1. Open Claude Code, type `/start` — the first time, Claude interviews you (5 min) to understand your level, your work, and your goals
+1. Open Claude Code, type `/start` — the first time, Claude interviews you (5 min)
 2. Claude sets up a personalized learning path — adapted to what you do, not just what you know
-3. Each session: open Claude Code, type `/start`, learn one thing, build one thing, type `/end`
-4. Every time the same: open, `/start`, learn, build, `/end`
-
-The goal: **get better at working with AI — in whatever way is useful to you.**
+3. Each session: open Claude Code, `/start`, learn, build, `/end`
+4. Every time the same loop. The goal: **get better at working with AI — in whatever way is useful to you.**
 
 ## Alternative: Git Clone
 
