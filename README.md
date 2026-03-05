@@ -3,18 +3,17 @@
 Learn to work with AI — at your level, at your pace.
 Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-## What You Need
+## Quickstart
 
-- **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — this project runs entirely inside Claude Code
+**You need:**
+- **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)**
 - A Claude subscription that includes Claude Code (Pro, Max, or Team)
-- **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)** (recommended)
 
 > **Complete beginner?** VS Code is free, and the Claude Code extension gives you
 > everything in one window. Ask someone to help you install it. Once Claude Code
 > is running, it takes over and guides you at your pace.
 
-## Quickstart
-
+**Then:**
 1. Create a **new, empty folder** on your computer
 2. Open that folder in **VS Code**
 3. Open the **Claude Code** panel and paste this:
