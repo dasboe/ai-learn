@@ -2,6 +2,21 @@
 
 Learn to work with AI — at your level, at your pace.
 
+## Quickstart
+
+1. Open **VS Code** with the **Claude Code extension**
+2. Paste this into the Claude Code chat:
+
+```
+https://github.com/dasboe/ai-learn/blob/main/bootstrap.md
+```
+
+3. Claude sets everything up. Then close this instance, reopen Claude Code, and type `/start`.
+
+That's it. No terminal, no git, no setup knowledge needed.
+
+---
+
 ## What This Is
 
 A learning framework where AI adapts to **you**. Whether you run a business, practice law, design interfaces, or write code — you start here, and the AI figures out what to teach you and what to create.
@@ -25,18 +40,16 @@ The goal: **get better at working with AI — in whatever way is useful to you.*
 > setup steps below if needed. Once Claude is running, it takes over and guides
 > you at your pace.
 
-## Get Started
+## Alternative: Git Clone
 
-**Setup (once):**
+If you prefer the traditional route:
+
 ```bash
 git clone https://github.com/dasboe/ai-learn.git my-ai-learning
 cd my-ai-learning
 ```
 
-**Every session (including the first):**
-Open the folder in VS Code, open the Claude Code panel, and type `/start`. From the terminal, you can also just run `claude` in the project folder.
-
-The first time, Claude interviews you and sets up your project. Every time after, it picks up where you left off. One concept, one deliverable. When you're done, close the session.
+Then open the folder in VS Code, open Claude Code, and type `/start`.
 
 Everything adapts — content, complexity, pace, language. An electrician might use AI to write client proposals in seconds. A lawyer might build an AI-assisted contract review workflow. A designer might go from Figma to working prototype without waiting on developers. A retired teacher might explore AI out of pure curiosity. A developer might have a full-stack app running by session five. All are valid paths.
 

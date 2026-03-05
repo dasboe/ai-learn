@@ -50,7 +50,6 @@ Fetch each file from `https://raw.githubusercontent.com/dasboe/ai-learn/main/` a
 ```
 CLAUDE.md
 README.md
-QUICKSTART.md
 .gitignore
 .coach/README.md
 .claude/commands/start.md
