@@ -3,6 +3,16 @@
 Learn to work with AI — at your level, at your pace.
 Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
+## What You Need
+
+- **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — this project runs entirely inside Claude Code
+- A Claude subscription that includes Claude Code (Pro, Max, or Team)
+- **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)** (recommended)
+
+> **Complete beginner?** VS Code is free, and the Claude Code extension gives you
+> everything in one window. Ask someone to help you install it. Once Claude Code
+> is running, it takes over and guides you at your pace.
+
 ## Quickstart
 
 1. Create a **new, empty folder** on your computer
@@ -30,16 +40,6 @@ A Claude Code project that turns Claude into your personal AI tutor. It adapts t
 4. Every time the same: open, `/start`, learn, build, `/end`
 
 The goal: **get better at working with AI — in whatever way is useful to you.**
-
-## What You Need
-
-- **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — this project runs entirely inside Claude Code
-- A Claude subscription that includes Claude Code (Pro, Max, or Team)
-- **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)** (recommended)
-
-> **Complete beginner?** VS Code is free, and the Claude Code extension gives you
-> everything in one window. Ask someone to help you install it. Once Claude Code
-> is running, it takes over and guides you at your pace.
 
 ## Alternative: Git Clone
 
