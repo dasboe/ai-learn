@@ -6,10 +6,14 @@ import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 
-// Project root = grandparent of .settings/mcp-server/
-const PROJECT_ROOT = join(dirname(new URL(import.meta.url).pathname), "../..");
+// In plugin context: user data lives in CWD, not relative to script location
+const PROJECT_ROOT = process.cwd();
 
-function resolve(relativePath) {
+// Integrity-check script lives in the plugin cache, next to mcp-server
+const PLUGIN_ROOT = dirname(new URL(import.meta.url).pathname);
+const INTEGRITY_SCRIPT = join(PLUGIN_ROOT, "../hooks/integrity-check.js");
+
+function resolveSafe(relativePath) {
   const full = join(PROJECT_ROOT, relativePath);
   if (!full.startsWith(PROJECT_ROOT)) {
     throw new Error("Path escapes project root");
@@ -41,8 +45,7 @@ function resolvePath(file) {
 // Run integrity-check.js and return result
 function runIntegrityCheck() {
   try {
-    const scriptPath = join(PROJECT_ROOT, ".settings/hooks/integrity-check.js");
-    const result = execSync(`node "${scriptPath}"`, { cwd: PROJECT_ROOT, encoding: "utf-8" });
+    const result = execSync(`node "${INTEGRITY_SCRIPT}"`, { cwd: PROJECT_ROOT, encoding: "utf-8" });
     return result.trim();
   } catch (e) {
     return JSON.stringify({ status: "error", message: e.message });
@@ -75,7 +78,7 @@ server.tool(
     }
 
     const relativePath = resolvePath(file);
-    const full = resolve(relativePath);
+    const full = resolveSafe(relativePath);
 
     if (action === "read") {
       try {

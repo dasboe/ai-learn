@@ -1,0 +1,11 @@
+{
+  "name": "ai-learn",
+  "description": "AI learning coach — personalized sessions adapted to your technical level and pace. One session, one technique learned, one thing created.",
+  "version": "2.0.0",
+  "author": {
+    "name": "dasboe"
+  },
+  "repository": "https://github.com/dasboe/ai-learn",
+  "license": "MIT",
+  "keywords": ["learning", "education", "ai-coach", "personalized", "claude-code"]
+}

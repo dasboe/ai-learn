@@ -1,0 +1,18 @@
+{
+  "name": "ai-learn-marketplace",
+  "owner": {
+    "name": "dasboe"
+  },
+  "metadata": {
+    "description": "AI-LERN — Learn to work with AI, at your level, at your pace."
+  },
+  "plugins": [
+    {
+      "name": "ai-learn",
+      "source": "./",
+      "description": "AI learning coach — personalized sessions adapted to your technical level and pace.",
+      "version": "2.0.0",
+      "keywords": ["learning", "education", "ai-coach", "personalized"]
+    }
+  ]
+}

@@ -4,7 +4,8 @@
 import { existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
-const PROJECT_ROOT = join(new URL(import.meta.url).pathname, '../../..');
+// In plugin context: user data lives in CWD, not relative to script location
+const PROJECT_ROOT = process.cwd();
 
 // Graduated learners may do anything
 if (existsSync(join(PROJECT_ROOT, '.settings/graduated'))) {

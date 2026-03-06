@@ -2,7 +2,7 @@
   "mcpServers": {
     "ai-learn-state": {
       "command": "node",
-      "args": [".settings/mcp-server/index.js"]
+      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/mcp-server/index.js"]
     }
   }
 }
