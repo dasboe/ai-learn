@@ -4,7 +4,7 @@ Complete end-of-session checklist for learners who have not yet graduated.
 
 **All state file operations use MCP tools — see CLAUDE.md § Learner State.**
 
-Read profile and progression via `read_profile` and `read_progression` before starting. Determine current session number from Sessions Log via `read_claude_md`.
+Read profile and progression via `state(action: "read", file: "profile")` and `state(action: "read", file: "progression")` before starting. Determine current session number from Sessions Log via `state(action: "read", file: "claude-md")`.
 
 ---
 
