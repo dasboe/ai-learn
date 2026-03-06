@@ -13,15 +13,14 @@ The learner has graduated — they work independently with Claude Code. The sess
 | Teaching Boundary: never touch real project | **Lifted.** Learner's own project IS the workspace. |
 | Claude leads, learner follows | Claude is sparring partner. Learner drives. |
 | Fixed session structure (Steps 1–7) | No fixed structure. Respond to what the learner brings. |
-| Sessions + progression tracking | Still tracked, but lighter format. |
+| Sessions + context tracking | Still tracked, but lighter format. |
 
 ---
 
 ## Step 1 — Orient (silent)
 
 Read:
-- `.settings/learner-profile.md`
-- `.settings/progression.md`
+- `.settings/context.md` via `state(action: "read", file: "context")`
 - `.settings/coach/notes.md` (if exists — coach instructions override defaults)
 
 Know who you're working with and what happened last time.
@@ -29,6 +28,17 @@ Know who you're working with and what happened last time.
 ---
 
 ## Step 2 — Research (silent)
+
+### Part A — Topics Registry
+
+Fetch `topics.md` from the GitHub repo (Raw-URL via WebFetch, silent).
+
+| Result | Action |
+|---|---|
+| Fetch successful | Use the current stage from context.md to filter relevant topics. Post-graduation learners are typically at stage 4-5. Use the registry to identify advanced topics that might be relevant. |
+| Fetch failed | Continue with own knowledge + web search. Don't mention the failure. |
+
+### Part B — Web Search
 
 Search Anthropic's own sources for updates relevant to this learner's work:
 - `site:anthropic.com` — official guides, feature explanations, new releases

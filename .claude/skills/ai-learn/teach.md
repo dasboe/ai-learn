@@ -2,74 +2,48 @@
 
 Flow for returning learners who have not yet graduated.
 
-`$ARGUMENTS` may contain a topic request — overrides the recommendation from `.settings/progression.md`.
+`$ARGUMENTS` may contain a topic request — overrides the recommendation from context.md.
 
 **All state file operations use MCP tools — see CLAUDE.md § Learner State.**
 
 ---
 
-## Step 1 — Integrity Check (silent — say nothing to the user)
-
-A fresh instance validates system health before starting.
-
-### A. Structural check
-
-| File | If missing |
-|---|---|
-| `.settings/learner-profile.md` | **Critical** — tell the user, stop. |
-| `.settings/progression.md` | Create minimal stub (phase: "Unknown"). Flag to coach. |
-| `.settings/CLAUDE.md.bootstrap` | Flag to coach. Skip drift check (B). |
-| `sessions/` directory | Create it. Flag to coach. |
-
-### B. CLAUDE.md drift check
-
-Compare `CLAUDE.md` against `.settings/CLAUDE.md.bootstrap` (if exists).
-
-| Sections | Expected state | If wrong |
-|---|---|---|
-| `## First Contact Protocol`, `## Teaching Boundary`, `## Rules`, `## Skills` | Identical to bootstrap | Restore from bootstrap |
-| `## My Project`, `## My Stack`, `## Session Conventions` | Different from bootstrap (personalized) | If still placeholder (`*Will be filled after profiling.*`), flag to coach |
-| `## Sessions Log` | Has rows | If empty despite existing sessions, reconstruct from session READMEs |
-
-### C. Progression size check
-
-If "Verlauf" in `.settings/progression.md` has >15 entries: compress (keep last 5 intact, summarize earlier ones). Flag compression to coach.
-
-### D. Report
-
-| Result | Action |
-|---|---|
-| All checks pass | Continue silently |
-| Issues auto-repaired | Continue. Append to `.settings/coach/flags.md`: `### Integrity Check — {date}` with what was found/repaired |
-| Critical (no profile) | Stop. Tell user. |
-
----
-
-## Step 2 — Orient (silent)
+## Step 1 — Orient (silent)
 
 Read:
-- `.settings/learner-profile.md`
-- `.settings/progression.md`
+- `.settings/context.md` via `state(action: "read", file: "context")`
 - `.settings/coach/notes.md` (if exists — coach instructions override defaults)
 
 Extract:
 
 | What | Source |
 |---|---|
-| Tech level + pace | `.settings/learner-profile.md` |
-| Last session number | Sessions Log in `CLAUDE.md` |
+| Tech level + pace | context.md → Lerner-Kurzprofil |
+| Current stage (Stufe) | context.md → Aktueller Stand |
+| Last session number | context.md → Aktueller Stand |
 | What was built last | Sessions Log in `CLAUDE.md` |
-| Next topic | "Nächster Schritt" in `.settings/progression.md` |
+| Next topic | context.md → Nächste Session |
 
 If `$ARGUMENTS` contains a topic or coach notes override → use that instead.
 
 ---
 
-## Step 3 — Research (silent, conditional)
+## Step 2 — Research (silent, conditional)
 
-Only run this step if ALL of these are true:
+### Part A — Topics Registry
+
+Fetch `topics.md` from the GitHub repo (Raw-URL via WebFetch, silent).
+
+| Result | Action |
+|---|---|
+| Fetch successful | Use the current stage from context.md to filter relevant topics. Primarily: topics of the current stage. Secondary: topics of the next stage (only if stage-change signals are present). Ignore: earlier stages and stages 2+ away. |
+| Fetch failed | Continue with own knowledge + web search. Don't mention the failure. |
+
+### Part B — Web Search (conditional)
+
+Only run this if ALL of these are true:
 - Tech level = Technical
-- Current phase ≥ 2 (Phase 1 focuses on basic Claude Code partnership — no search needed)
+- Current stage ≥ 2 (Stage 1 focuses on basic Claude Code partnership — no search needed)
 
 Search Anthropic's own sources, focused on the planned session topic:
 - `site:anthropic.com` — official guides, feature explanations, best practices
@@ -84,19 +58,19 @@ Skip: general AI news, hype, third-party opinions, anything already covered in t
 
 | Result | Action |
 |---|---|
-| Relevant findings | Weave into Step 6 (Brief) under "Aktuell von Anthropic:" |
+| Relevant findings | Weave into Step 5 (Brief) under "Aktuell von Anthropic:" |
 | Nothing relevant | Continue silently. Don't mention the search. |
 
 ---
 
-## Step 4 — Plan the session
+## Step 3 — Plan the session
 
 ### Concept — one only
 
 | Tech level | Content focus |
 |---|---|
-| Non-technical | Prompting, text workflows, AI for their domain. Phase 3+: what CLAUDE.md does, how project structure helps |
-| Semi-technical | Bridging existing tools with AI. Phase 2+: Claude Code basics, shaping their environment |
+| Non-technical | Prompting, text workflows, AI for their domain. Stage 3+: what CLAUDE.md does, how project structure helps |
+| Semi-technical | Bridging existing tools with AI. Stage 2+: Claude Code basics, shaping their environment |
 | Technical | Code architecture, Claude Code features (CLAUDE.md, MCPs, hooks, subagents) |
 
 ### Deliverable — one tangible thing
@@ -124,7 +98,7 @@ Match to motivation driver (from "What drives me" in profile):
 
 ---
 
-## Step 5 — Create session folder
+## Step 4 — Create session folder
 
 Session number = last + 1 (zero-padded: `01`, `02`...).
 
@@ -151,7 +125,7 @@ Create `sessions/session-{NN}/README.md`:
 
 ---
 
-## Step 6 — Brief the user
+## Step 5 — Brief the user
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -169,7 +143,7 @@ Today: {what we learn + create}
 
 ---
 
-## Step 7 — Update sessions log
+## Step 6 — Update sessions log
 
 Add row to `## Sessions Log` in `CLAUDE.md`:
 ```

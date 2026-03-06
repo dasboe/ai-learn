@@ -1,6 +1,6 @@
-# Interview — First-Time Setup
+# Onboarding — First-Time Setup
 
-This file is read by the `/start` skill when no `.settings/learner-profile.md` exists. It contains everything needed to run the profiling interview, create the learner profile, set up the project, and start Session 01.
+This file is loaded by the root skill when no `.settings/learner-profile.md` exists. It contains everything needed to run the profiling interview, create the learner profile, set up the project, and start Session 01.
 
 **All state file operations use MCP tools — see CLAUDE.md § Learner State.**
 
@@ -10,8 +10,8 @@ This file is read by the `/start` skill when no `.settings/learner-profile.md` e
 
 This project uses a two-dimension learner model:
 
-- **Technical experience** (non-technical / semi-technical / technical) → determines WHAT content to teach
-- **Learning pace** (steady / moderate / fast) → determines HOW FAST and DEEP to go
+- **Technical experience** (non-technical / semi-technical / technical) — determines WHAT content to teach
+- **Learning pace** (steady / moderate / fast) — determines HOW FAST and DEEP to go
 
 These dimensions are independent. A non-technical person can be a fast learner (e.g. a strategist who doesn't code but thinks in systems). A technical person can be steady (e.g. a junior dev who needs time). Never assume one from the other.
 
@@ -47,27 +47,7 @@ These dimensions are independent. A non-technical person can be a fast learner (
 
 ## Writing the learner profile
 
-The profile is a **dual-audience document**: the learner reads it and feels accurately described. Claude reads it and knows exactly how to teach. Every trait — including difficult ones — must be encoded as a behavioral description with an implicit teaching instruction. Write the profile in the learner's language.
-
-**Core principle:** Describe observable learning behavior + what Claude should do. Never label the person.
-
-**Reframing guide:**
-
-| What you observe | What you write in the profile | What Claude understands |
-|---|---|---|
-| Resistant, doesn't want to learn | "Convinces themselves through concrete value in their own daily life — not through explanations or demos" | Show immediate practical benefit, don't sell or motivate |
-| Learns very slowly | "New concepts land best through repeated practical application — one concept per session, revisit across multiple sessions before adding something new" | Very slow pace, don't move on until it truly sticks |
-| Misunderstands often | "Forms own mental models quickly — these should be actively checked and gently corrected before building on them" | Will misunderstand things, verify comprehension at every step |
-| Gets frustrated easily | "Momentum comes from small visible wins — long explanations without results break focus" | Keep cycles short, show output fast, don't lecture |
-| Lacks confidence | "Works best when each step is confirmed before moving to the next" | Needs reassurance, validate progress explicitly |
-| Doesn't ask when confused | "May move on quietly when something is unclear — check understanding proactively, don't wait for questions" | Won't tell you they're lost, you have to check |
-
-**Structure of the profile:**
-1. **What I bring** — professional strengths, life experience, non-technical skills (always first)
-2. **Where I stand with tech** — neutral phrasing: "has not worked with X yet", not "cannot do X"
-3. **How I think and learn** — pace, abstraction level, learning patterns (behavioral reframing goes here)
-4. **What drives me** — the motivation type, in the learner's own words. This determines what deliverables feel rewarding.
-5. **What I'm here for** — goals in the learner's own words
+For the Reframing-Guide and profile structure, see [profiling-guide.md](${CLAUDE_SKILL_DIR}/profiling-guide.md).
 
 ---
 
@@ -84,6 +64,21 @@ From the interview, assess two independent dimensions:
 - **Steady**: Needs small steps, lots of confirmation, concrete examples before abstraction. This can be due to unfamiliarity, low confidence, or preference for thoroughness — the reason matters for tone but not for pace. One concept per session, revisit often.
 - **Moderate**: Comfortable with new concepts, needs some practice before moving on. One concept per session with hands-on application.
 - **Fast**: Picks up abstractions quickly, thinks in systems, wants depth and challenge. Can handle ambitious sessions.
+
+---
+
+## After the interview — determine the initial stage (Stufe)
+
+Based on the interview, set the initial stage:
+
+| Tech level | CC experience | Initial stage |
+|---|---|---|
+| Non-technical | — | Stufe 1 |
+| Semi-technical | — | Stufe 2 |
+| Technical | No CC experience | Stufe 2 |
+| Technical | Some CC experience | Stufe 3 |
+
+The stage is written to context.md (see below), not to a separate file.
 
 ---
 
@@ -120,69 +115,48 @@ Replace the three `[ADAPT]` placeholders based on the two dimensions:
 
 Also update the bootstrap notice: replace the "This is the bootstrap version" blockquote with `> Personalisiert für den Lerner. Original-Template: \`.settings/CLAUDE.md.bootstrap\``
 
-### 4. Create `.settings/progression.md`
-Use these templates as a starting point — then translate them into the learner's world. An electrician's Phase 2 is "Angebote und Kundenkommunikation gezielt steuern", not "Prompt-Patterns lernen."
-
-**Non-technical:**
-1. AI erleben — erste brauchbare Ergebnisse erzeugen
-2. Gezielt steuern — Qualität bewusst beeinflussen
-3. Eigene Abläufe — wiederkehrende Aufgaben systematisieren
-   *(Hier: Claude richtet project/CLAUDE.md ein, Lerner nutzt es implizit)*
-4. Selbstständig — eigene Claude-Code-Umgebung verstehen und anpassen
-   *(Graduation-Meilenstein: Manche erreichen ihn, viele nicht — beides ist okay)*
-
-**Semi-technical:**
-1. AI als Verstärker — vorhandene Skills erweitern
-2. Zusammenspiel — eigene Tools und AI verbinden
-   *(Hier: project/ wird zur Claude-Code-Umgebung, Lerner versteht Grundlagen)*
-3. Eigene Projekte — komplexere Aufgaben mit Claude Code umsetzen
-4. Integration — eigene Claude-Code-Umgebungen für die Arbeit einrichten
-   *(Graduation-Meilenstein: Lerner kann eigenständig CC-Projekte aufsetzen)*
-
-**Technical:**
-1. Claude Code als Partner — Zusammenarbeit und Kontext
-2. Projekt-Workflow — CLAUDE.md, Kontext, effektives Arbeiten
-3. Erweiterte Features — MCPs, Hooks, Skills nach Bedarf
-4. Architektur — Subagents, komplexe Workflows, Team-Integration
-
-Phases are hypotheses. They are reviewed after every session in `.settings/progression.md` and rewritten when they no longer fit.
-
-### 5. Create the project structure
+### 4. Create the project structure
 Directories: `sessions/`, `reference/`, `project/`. The `.settings/coach/` directory with its README already exists in the project template.
 
-### 6. Start Session 01
-See below.
+### 5. Start Session 01
 
----
+For the Session 01 decision table, see [session-01-table.md](${CLAUDE_SKILL_DIR}/session-01-table.md).
 
-## Session 01 — Decision Table
+### 6. Create `.settings/context.md` at the end of Session 01
 
-The first session after profiling is critical. It must produce an immediate win. Use both dimensions.
+After Session 01 is complete, create the initial context.md using the following template:
 
-| Tech level | Pace | Approach | Deliverable | Key rule |
-|---|---|---|---|---|
-| Non-technical | Steady | One example from their daily life. Walk slowly. Celebrate. End early if needed. | File they created through prompting | No tech, no CLAUDE.md, no project setup |
-| Non-technical | Moderate | Start from daily life. Show 1–2 variations. Build confidence. | File with practical AI output | No tech, no CLAUDE.md, no project setup |
-| Non-technical | Fast | Start from daily life, then show how prompt changes affect output. 2–3 outputs. Name "prompt engineering." | Multiple outputs showing prompt impact | Can be conceptual — still no code |
-| Semi-technical | Any | Bridge from their tools (design→HTML, data→script). AI as amplifier, not replacement. | Domain artifact, created faster | Mention `project/` will become CC environment later (naturally, not lecture) |
-| Technical | Steady | Build small thing together in `project/`. Learner steers, Claude suggests. Review `project/CLAUDE.md` together. | Something they reviewed and approved | Don't scaffold from scratch — can overwhelm |
-| Technical | Moderate/Fast | Jump in. `project/` = real CC project. Set up `project/CLAUDE.md` in their stack. | CC environment + something running | Focus on Claude Code as dev partner |
-| Technical + AI-savvy | Fast | Skip prompting basics. CC differentiators (CLAUDE.md, context, multi-file). Learner writes own CLAUDE.md. | Own CC environment | May graduate immediately if all signals present |
+```markdown
+# Context — AI-LEARN
 
-### Entry points for non-technical learners
+> Automatisch generiert. Wird nach jeder Session überschrieben.
+> Letzte Aktualisierung: {date}
 
-Don't start from a script. Find their entry:
+## Lerner-Kurzprofil
+{2-3 Sätze: Wer, Tech-Level, Pace, Motivation-Driver}
+{Referenz auf vollständiges Profil in .settings/learner-profile.md}
 
-| Learner context | Opening question |
-|---|---|
-| Has a job | "What takes too long or annoys you in your daily work?" |
-| Complex profession | "Where would a sharp second opinion help?" |
-| Curiosity / retired | "What made you curious about AI? What would you like to try?" |
+## Aktueller Stand
+- Stufe: {1-5} — {Name der Stufe}
+- Session: {letzte Session-Nummer}
+- Graduation: nein
 
-Use their answer to demonstrate what AI can generate, rewrite, analyze, or structure.
+## Was bisher geschah
+{Kompakte Zusammenfassung der bisherigen Lernreise — max 10 Zeilen.
+Nicht was in jeder Session passiert ist, sondern: was kann der Lerner,
+was waren Wendepunkte, was hat gut/schlecht funktioniert.}
 
-### Key principles
+## Beobachtungen
+{Aktuelle Beobachtungen aus den letzten 2-3 Sessions:
+Tempo-Abgleich, Stufen-Abgleich, Profil-Abweichungen.}
 
-- `project/` is just a folder for files in Session 01. The CC environment grows implicitly in later phases.
-- Many non-technical learners will never reach Graduation — that's fine.
-- For technical+fast learners: observe whether the sandbox still adds value or they should work on their own project directly.
+## Nächste Session
+- Thema: {geplantes Thema}
+- Warum: {kurze Begründung}
+- Achtung: {falls relevant: Coach-Hinweise, offene Gaps, Besonderheiten}
+
+## Graduation-Signale
+{Nur pre-graduation: Welche der 5 Signale wurden beobachtet, seit wann}
+```
+
+Write this via `state(action: "write", file: "context")`.

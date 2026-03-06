@@ -18,7 +18,7 @@ Match the user's language (German if they wrote German, English if English, etc.
 
 ## Step 2 — Clone (if needed)
 
-If the repo is not yet cloned (no `.claude/commands/` directory in the target):
+If the repo is not yet cloned (no `.claude/skills/` directory in the target):
 
 Into current directory:
 ```bash

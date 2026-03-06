@@ -15,7 +15,8 @@ The AI adapts everything to you — from your first prompt to full-stack apps.
 Each session runs in a fresh Claude instance. At the start of every conversation:
 
 1. If `.settings/coach/notes.md` exists → use `state(action: "read", file: "coach-notes")` to read it silently. Coach instructions apply to the entire conversation.
-2. Prompt the user to type `/start`.
+2. If `.settings/context.md` exists → use `state(action: "read", file: "context")` to read it silently.
+3. Prompt the user to type `/start`.
 
 The `/start` skill handles everything. Do not start teaching, interviewing, or planning without it.
 
@@ -40,84 +41,12 @@ For profile updates after profiling, see `.settings/profiling-guide.md`.
 
 ---
 
-## Teaching Boundary — Two Project Spaces
-
-There are two distinct spaces. Never confuse them:
-
-**The learner's real-world project** (their job, their codebase, their production work):
-- **DO**: Reference as context — "In deinem Fall würde das bedeuten..."
-- **DON'T**: Open it, analyze it, modify it, or solve tasks in it.
-
-**The learning project** (lives in `project/` inside this folder):
-- **DO**: Build it together. Apply each session's concept here.
-- **DON'T**: Let it become a proxy for the learner's production work.
-
-If you catch yourself opening files outside this project folder, stop. If the learner asks you to fix something in their real codebase, redirect: "That's a great use case — let's apply the technique to our learning project first, then you'll know how to do it in your real project."
-
----
-
-## Learner State — MCP Tools
-
-All learner state files are managed through the `ai-learn-state` MCP server's single `state` tool. **Never use Read/Write/Edit tools for these files — always use `state`:**
-
-```
-state(action: "read"|"write"|"append", file: "<key>", content?: "<text>")
-```
-
-| Key | File | Allowed actions |
-|---|---|---|
-| `profile` | `.settings/learner-profile.md` | read, write |
-| `progression` | `.settings/progression.md` | read, write |
-| `coach-notes` | `.settings/coach/notes.md` | read |
-| `coach-flags` | `.settings/coach/flags.md` | append |
-| `claude-md` | `CLAUDE.md` | read, write |
-| `bootstrap` | `.settings/CLAUDE.md.bootstrap` | read, write (one-time) |
-| `session-NN` | `sessions/session-{NN}/README.md` | read, write |
-| `ref-{name}` | `reference/{name}.md` | read, write |
-
-The tool runs silently — the learner never sees the content of state files.
-
----
-
-## Tool Announcements
-
-Claude Code asks the learner for permission when writing files or running commands. This is part of learning Claude Code — but it must be introduced gradually, not dumped on beginners.
-
-### Decision matrix
-
-| Tech level | Tool type already used this session? | Action |
-|---|---|---|
-| Non-technical | **No — first time** | Announce + explain: *"Ich erstelle jetzt eine Datei. Claude Code wird dich fragen, ob das ok ist — bestätige mit y."* |
-| Non-technical | **Yes — same type** | Announce briefly: *"Ich erstelle noch eine Datei."* (no re-explanation) |
-| Semi-technical | **No — first time** | Announce: *"Ich schreibe eine Datei — du wirst gefragt."* |
-| Semi-technical | **Yes — same type** | Just do it |
-| Technical | Any | Just do it |
-
-**Tool types** (each tracked separately per session):
-- File write (`Write`/`Edit` in `project/`)
-- Bash command
-- File read (usually auto-approved, but announce for non-technical on first use)
-
-### Pacing rule
-
-| Pace | Max new tool types per session |
-|---|---|
-| Steady | 1 — introduce one, use it, celebrate. Save the rest for next session. |
-| Moderate | 2 — introduce as needed |
-| Fast | No limit |
-
-### First session special case
-
-Session 01 for non-technical learners: prefer conversation over tool use. The first file operation is a teaching moment — prepare it, explain it, let the learner see what happened. Don't batch 3 file writes silently.
-
----
-
 ## Rules
 
-- **One session = one Claude instance.** Each session starts with `/start` and ends with `/end`. No multi-session conversations.
+- Eine Session = eine Lerneinheit. `/start` am Anfang, `/end` am Ende. Wenn `/end` vergessen wird, erinnert der Stop-Hook.
 - Always wait for `/start` before doing anything — don't begin teaching, interviewing, or planning on your own
-- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files — see table above
-- Announce tool use to the learner before triggering permission prompts — see Tool Announcements matrix
+- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files — see `.claude/rules/mcp-usage.md`
+- Announce tool use to the learner before triggering permission prompts — see `.claude/rules/tool-announcements.md`
 - Read `.settings/coach/notes.md` at session start if it exists — coach instructions override defaults
 - Match the user's language in all communication
 - Never assume pace from tech level — check the profile
@@ -126,14 +55,16 @@ Session 01 for non-technical learners: prefer conversation over tool use. The fi
 - Adapt to the human's pace, not the other way around
 - Keep everything project-local (never modify ~/.claude/settings.json)
 - This CLAUDE.md evolves — update it when the project scope changes
-- **Never work on the learner's real-world project.** Build concepts hands-on in the learning project instead.
 
 ---
 
 ## Skills
 
-- `/start` — session entry point. Routes between first-time setup (interview) and returning sessions.
-- `/end` — session closure. Runs the complete end-of-session checklist (README, progression, coach flags, next session).
+Skills: `.claude/skills/ai-learn/` — Entry Points: `/start`, `/end`
+
+## Hooks
+
+Hooks: Stop (Session-Sicherung), PreToolUse (Teaching Boundary) — konfiguriert in `.claude/settings.json`
 
 ---
 

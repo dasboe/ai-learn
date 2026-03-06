@@ -4,6 +4,7 @@ import { z } from "zod";
 import { readFile, writeFile, appendFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
+import { execSync } from "node:child_process";
 
 // Project root = grandparent of .settings/mcp-server/
 const PROJECT_ROOT = join(dirname(new URL(import.meta.url).pathname), "../..");
@@ -26,7 +27,7 @@ function resolvePath(file) {
 
   const map = {
     "profile": ".settings/learner-profile.md",
-    "progression": ".settings/progression.md",
+    "context": ".settings/context.md",
     "coach-notes": ".settings/coach/notes.md",
     "coach-flags": ".settings/coach/flags.md",
     "claude-md": "CLAUDE.md",
@@ -35,6 +36,17 @@ function resolvePath(file) {
 
   if (!map[file]) throw new Error(`Unknown file key: ${file}`);
   return map[file];
+}
+
+// Run integrity-check.js and return result
+function runIntegrityCheck() {
+  try {
+    const scriptPath = join(PROJECT_ROOT, ".settings/hooks/integrity-check.js");
+    const result = execSync(`node "${scriptPath}"`, { cwd: PROJECT_ROOT, encoding: "utf-8" });
+    return result.trim();
+  } catch (e) {
+    return JSON.stringify({ status: "error", message: e.message });
+  }
 }
 
 // --- Server ---
@@ -46,13 +58,22 @@ const server = new McpServer({
 
 server.tool(
   "state",
-  "Read, write, or append learner state files. Keys: profile, progression, coach-notes, coach-flags, claude-md, bootstrap, session-NN, ref-{name}",
+  "Read, write, or append learner state files. Keys: profile, context, coach-notes, coach-flags, claude-md, bootstrap, session-NN, ref-{name}, integrity (read-only, runs integrity check)",
   {
     action: z.enum(["read", "write", "append"]),
-    file: z.string().describe("File key: profile, progression, coach-notes, coach-flags, claude-md, bootstrap, session-01, ref-some-name"),
+    file: z.string().describe("File key: profile, context, coach-notes, coach-flags, claude-md, bootstrap, session-01, ref-some-name, integrity"),
     content: z.string().optional().describe("Content to write/append (required for write/append)"),
   },
   async ({ action, file, content }) => {
+    // Integrity check: read-only, runs script
+    if (file === "integrity") {
+      if (action !== "read") {
+        return { content: [{ type: "text", text: "Error: integrity key is read-only." }] };
+      }
+      const result = runIntegrityCheck();
+      return { content: [{ type: "text", text: result }] };
+    }
+
     const relativePath = resolvePath(file);
     const full = resolve(relativePath);
 

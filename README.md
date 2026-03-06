@@ -61,8 +61,14 @@ After your first session, Claude Code creates:
 ```
 my-ai-learning/
 ├── CLAUDE.md              <- drives Claude Code's behavior, adapts to you
-├── learner-profile.md     <- your profile, created in the interview
-├── progression.md         <- tracks your learning journey
+├── topics.md              <- curated index of AI topics in 5 learning stages
+├── .settings/
+│   ├── learner-profile.md <- your profile, created in the interview
+│   └── context.md         <- tracks where you are and what's next
+├── .claude/
+│   ├── commands/          <- /start, /end entry points
+│   ├── rules/             <- teaching rules (auto-loaded)
+│   └── skills/ai-learn/   <- the AI learning skill
 ├── sessions/
 │   └── session-01/
 │       └── README.md      <- what you learned and built
