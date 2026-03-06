@@ -1,78 +1,71 @@
 # AI-LERN
 
 Learn to work with AI — at your level, at your pace.
-Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin.
 
 ## What This Is
 
-A Claude Code project that turns Claude into your personal AI tutor. It adapts to **you** — whether you run a business, practice law, design interfaces, or write code. Claude interviews you once, then builds a personalized learning path. Each session: one concept learned, one thing built.
+A Claude Code plugin that turns Claude into your personal AI tutor. It adapts to **you** — whether you run a business, practice law, design interfaces, or write code. Claude interviews you once, then builds a personalized learning path. Each session: one concept learned, one thing built.
 
-## Quickstart
+## Install
 
 **You need:**
 - **[VS Code](https://code.visualstudio.com/)** with the **[Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropics.claude-code)**
 - A Claude subscription that includes Claude Code (Pro, Max, or Team)
 
-> **Complete beginner?** VS Code is free, and the Claude Code extension gives you
-> everything in one window. Ask someone to help you install it. Once Claude Code
-> is running, it takes over and guides you at your pace.
-
-**Then:**
-1. Create a **new, empty folder** on your computer
-2. Open that folder in **VS Code**
-3. Open the **Claude Code** panel and paste this:
+**Then in Claude Code:**
 
 ```
-https://github.com/dasboe/ai-learn/blob/main/bootstrap.md
+/plugin marketplace add dasboe/ai-learn
+/plugin install ai-learn@ai-learn-marketplace
 ```
 
-4. Claude sets everything up. When it's done, **close Claude Code**, reopen it in the same folder, and type `/start`.
+Restart Claude Code, then type `/ai-learn:start`.
 
-That's it. No terminal, no git, no setup knowledge needed.
+That's it. Claude interviews you once, then every session starts with `/ai-learn:start`.
 
 ---
 
 ## How It Works
 
-1. Open Claude Code, type `/start` — the first time, Claude interviews you (5 min)
+1. Type `/ai-learn:start` — the first time, Claude interviews you (5 min)
 2. Claude sets up a personalized learning path — adapted to what you do, not just what you know
-3. Each session: open Claude Code, `/start`, learn, build, `/end`
+3. Each session: `/ai-learn:start`, learn, build, `/ai-learn:end`
 4. Every time the same loop. The goal: **get better at working with AI — in whatever way is useful to you.**
 
-## Alternative: Git Clone
+## Commands
 
-If you know git:
-
-```bash
-git clone https://github.com/dasboe/ai-learn.git my-ai-learning
-cd my-ai-learning
-```
-
-Open the folder in VS Code, open Claude Code, type `/start`.
+| Command | What it does |
+|---|---|
+| `/ai-learn:start` | Start a session — interview (first time) or next lesson |
+| `/ai-learn:end` | Close the session — saves progress, updates context |
+| `/ai-learn:bootstrap` | Initial setup for new learners |
 
 ## How It Adapts
 
 Everything adapts — content, complexity, pace, language. An electrician might use AI to write client proposals in seconds. A lawyer might build an AI-assisted contract review workflow. A designer might go from Figma to working prototype without waiting on developers. A retired teacher might explore AI out of pure curiosity. A developer might have a full-stack app running by session five. All are valid paths.
 
-## Project Structure
+## What's Included
 
-After your first session, Claude Code creates:
+- **Skills** — Routing, onboarding, teaching, coaching, session closure
+- **Hooks** — Stop (reminds about `/end`), PreToolUse (sandbox enforcement)
+- **MCP Server** — State management for learner profile, context, sessions
+- **Rules** — Teaching boundary, tool announcements, MCP usage
+
+## User Data
+
+The plugin creates these files in your working directory (not tracked by git):
 
 ```
-my-ai-learning/
-├── CLAUDE.md              <- drives Claude Code's behavior, adapts to you
-├── topics.md              <- curated index of AI topics in 5 learning stages
+your-project/
 ├── .settings/
-│   ├── learner-profile.md <- your profile, created in the interview
-│   └── context.md         <- tracks where you are and what's next
-├── .claude/
-│   ├── commands/          <- /start, /end entry points
-│   ├── rules/             <- teaching rules (auto-loaded)
-│   └── skills/ai-learn/   <- the AI learning skill
+│   ├── learner-profile.md    <- your profile, created in the interview
+│   └── context.md            <- tracks where you are and what's next
 ├── sessions/
 │   └── session-01/
-│       └── README.md      <- what you learned and built
-└── project/               <- your learning project, grows session by session
+│       └── README.md         <- what you learned and built
+├── reference/                <- lookup docs you build over time
+└── project/                  <- your learning project, grows session by session
 ```
 
 ## FAQ

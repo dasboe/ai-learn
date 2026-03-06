@@ -3,7 +3,9 @@ node_modules/
 .env.*
 .DS_Store
 *.log
-.settings/coach/
-.settings/learner-profile.md
-.settings/progression.md
-.settings/CLAUDE.md.bootstrap
+
+# User data (created at runtime, not part of the plugin)
+.settings/
+sessions/
+project/
+reference/

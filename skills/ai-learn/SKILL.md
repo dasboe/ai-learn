@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## System-Status
 
-!`node ${CLAUDE_SKILL_DIR}/../../../.settings/hooks/integrity-check.js`
+!`node ${CLAUDE_PLUGIN_ROOT}/servers/hooks/integrity-check.js`
 
 ---
 
@@ -17,7 +17,7 @@ Before routing, verify the MCP tools are available. Try calling `state(action: "
 | Result | Action |
 |---|---|
 | Tool exists (returns content or "File does not exist.") | MCP server is connected. Continue to Route. |
-| Tool not found / not available | Tell the user: **"Der MCP-Server ist nicht erreichbar. Bitte stelle sicher, dass `npm install` in `.settings/mcp-server/` ausgeführt wurde, dann starte Claude Code neu und tippe `/start`."** **Stop.** |
+| Tool not found / not available | Tell the user: **"Der MCP-Server ist nicht erreichbar. Bitte stelle sicher, dass das Plugin korrekt installiert ist, dann starte Claude Code neu und tippe `/ai-learn:start`."** **Stop.** |
 
 ---
 
@@ -43,11 +43,11 @@ If the user invoked `/start some topic`, forward `$ARGUMENTS` to the loaded supp
 
 ## System Rules
 
-The following rules apply to all flows. Detailed definitions live in `.claude/rules/` (created in Phase 4). Until then, refer to the matching sections in `CLAUDE.md`:
+The following rules apply to all flows. Detailed definitions live in the plugin's `rules/` directory (auto-loaded):
 
-- **Teaching Boundary** → `.claude/rules/teaching-boundary.md`
-- **Tool Announcements** → `.claude/rules/tool-announcements.md`
-- **MCP Usage** → `.claude/rules/mcp-usage.md`
+- **Teaching Boundary** → `rules/teaching-boundary.md`
+- **Tool Announcements** → `rules/tool-announcements.md`
+- **MCP Usage** → `rules/mcp-usage.md`
 
 ---
 

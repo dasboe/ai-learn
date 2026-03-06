@@ -5,7 +5,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PROJECT_ROOT = join(new URL(import.meta.url).pathname, '../../..');
+// In plugin context: user data lives in CWD, not relative to script location
+const PROJECT_ROOT = process.cwd();
 
 // Find the last session
 const sessionsDir = join(PROJECT_ROOT, 'sessions');
