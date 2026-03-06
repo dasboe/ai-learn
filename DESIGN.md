@@ -8,7 +8,7 @@
 
 ## What this system is
 
-A single CLAUDE.md that bootstraps a personalized AI learning environment. The user clones a repo, starts Claude Code, and types `/start`. Claude interviews them, creates a learner profile, personalizes the CLAUDE.md, and starts a session loop. No curriculum, no predefined content — Claude adapts everything based on who the learner is.
+A personalized AI learning environment built on Claude Code's Skill architecture. The user clones a repo, starts Claude Code, and types `/start`. The `/start` command triggers the `ai-learn` skill (`.claude/skills/ai-learn/SKILL.md`), which routes to the appropriate flow: interview for first-time users, teaching for pre-graduation sessions, coaching for post-graduation. Claude interviews new learners, creates a learner profile, personalizes CLAUDE.md, and starts a session loop. No curriculum, no predefined content — Claude adapts everything based on who the learner is.
 
 ## The core problem this solves
 
@@ -104,11 +104,11 @@ Claude reads CLAUDE.md at the start of every conversation. It's the primary stee
 
 ### Why [ADAPT] markers instead of full rewrite?
 
-A full rewrite would be too risky — Claude could delete the First Contact Protocol, the Rules, the Teaching Boundary. The [ADAPT] approach is surgical: only marked sections change, the skeleton survives. If Claude messes up one section, the rest is intact.
+A full rewrite would be too risky — Claude could delete the First Contact Protocol or the Rules. The [ADAPT] approach is surgical: only marked sections change, the skeleton survives. If Claude messes up one section, the rest is intact. Additionally, system rules now live in `.claude/rules/` as modular files (teaching-boundary.md, tool-announcements.md, mcp-usage.md) — they're automatically loaded by Claude Code and can't be accidentally deleted from CLAUDE.md.
 
 ### Where are the interview instructions?
 
-The interview instructions (profiling questions, profile writing guide, reframing guide, Session 01 Guide) live in `.claude/commands/interview.md` — a separate file that's only loaded when `/start` detects no profile exists. This keeps the CLAUDE.md lean from the start: the bootstrap version never contains interview instructions in the main file. After profiling, a copy of the reframing guide is also saved to `reference/profiling-guide.md` for when Claude needs to update the profile later. See "Why the CLAUDE.md shrinks after profiling" below.
+The interview instructions live in `.claude/skills/ai-learn/onboarding.md` — a supporting file that's only loaded when the root skill detects no profile exists. This keeps the CLAUDE.md lean from the start: the bootstrap version never contains interview instructions in the main file. The reframing guide and Session 01 decision table are extracted into their own supporting files (`profiling-guide.md` and `session-01-table.md`) within the same skill directory, referenced from `onboarding.md` via `${CLAUDE_SKILL_DIR}`. The profiling guide is also referenced from `close.md` for profile updates at session end.
 
 ---
 
@@ -129,12 +129,14 @@ This is a conscious tradeoff: minimal bootstrap > pre-configured bootstrap.
 
 The original single-user version (`/new-session`) searched Anthropic sources at every session start. The generic system makes this conditional:
 
-- **Non-technical + Semi-technical**: No search. Content is domain-specific, not feature-driven.
-- **Technical Phase 1**: No search. Focus is on basic Claude Code partnership — the learner needs to understand the tool, not its changelog.
-- **Technical Phase 2+**: Search for session-topic-relevant updates from Anthropic sources. Findings inform session planning and appear in the briefing.
+- **Non-technical + Semi-technical**: No web search. Content is domain-specific, not feature-driven. The topics registry (fetched via WebFetch) provides topic orientation for all learners.
+- **Technical Stage 1**: No web search. Focus is on basic Claude Code partnership — the learner needs to understand the tool, not its changelog.
+- **Technical Stage 2+**: Web search for session-topic-relevant updates from Anthropic sources. Findings inform session planning and appear in the briefing.
 - **Post-graduation**: Always search. The learner works independently and needs current information. Findings are woven into the greeting conversationally, not as a formal block.
 
-This preserves the "minimal bootstrap" principle while ensuring technical learners don't work with outdated patterns. The search is targeted (Anthropic sources only, max 3 bullets, skip noise) to avoid context bloat.
+Additionally, all session types now attempt to fetch `topics.md` from the GitHub repo (silent, via WebFetch). The topics registry provides a curated index of AI topics organized by five learning stages, helping Claude select appropriate topics for the learner's current stage. If the fetch fails, Claude falls back to its own knowledge + web search.
+
+This preserves the "minimal bootstrap" principle while ensuring learners get topic orientation and technical learners don't work with outdated patterns. The web search is targeted (Anthropic sources only, max 3 bullets, skip noise) to avoid context bloat.
 
 ---
 
@@ -143,15 +145,16 @@ This preserves the "minimal bootstrap" principle while ensuring technical learne
 The session progression is intentionally implicit. Claude determines the next topic based on:
 - The learner profile (dimensions)
 - The Sessions Log (what was already covered)
-- The content type rules in `start-session.md` Step 4 (what content maps to which tech level and phase)
-- `.settings/progression.md` (current phase, last observations, planned next step)
+- The content type rules in `teach.md` Step 3 (what content maps to which tech level and stage)
+- `.settings/context.md` (current stage, last observations, planned next step)
+- The topics registry (`topics.md`, fetched from GitHub) — a curated index of AI topics organized by five learning stages
 
 A predefined roadmap would:
 - Conflict with the adaptive nature of the system
 - Need to be maintained for every dimension combination (3 × 3 = 9 paths minimum)
 - Become a constraint rather than a guide
 
-The current approach trusts Claude to plan sensible progressions. This works well for ~5-6 sessions. Beyond that, the gap is filled by `.settings/progression.md` — a living document with hypothesis-based phases that Claude checks and adjusts after every session. See "Why progression.md exists" below for the full rationale.
+The current approach trusts Claude to plan sensible progressions, aided by the topics registry which provides orientation without prescription. This works well for ~5-6 sessions. Beyond that, the gap is filled by `.settings/context.md` — a rolling summary that Claude rewrites after every session, capturing the current state, observations, and planned next step. See "Why context.md exists" below for the full rationale.
 
 ---
 
@@ -171,19 +174,19 @@ At `/start`, a **fresh instance** — with no drift from previous sessions — r
 
 ### What the check covers
 
-The integrity check (Step 1 in `start-session.md`) runs four mechanical checks before any session work begins:
+The integrity check is implemented as a standalone script (`.settings/hooks/integrity-check.js`) that runs three mechanical checks and returns JSON:
 
-**A. Structural check** — do required files exist? (`.settings/learner-profile.md`, `.settings/progression.md`, `.settings/CLAUDE.md.bootstrap`, `sessions/`). Missing files are either critical (no profile → stop) or repairable (no sessions dir → create it).
+**A. Structural check** — do required files exist? (`.settings/learner-profile.md`, `.settings/context.md`, `.settings/CLAUDE.md.bootstrap`). Missing files are either critical (no profile → `status: "critical"`) or warnings.
 
-**B. CLAUDE.md drift check** — diff against the bootstrap backup. Immutable sections (Rules, Teaching Boundary, Skills, First Contact Protocol) must match the bootstrap exactly. If content was removed or altered, restore it. Personalized sections (My Project, My Stack, Session Conventions) should differ — but if they still contain the bootstrap placeholder, profiling didn't complete properly.
+**B. CLAUDE.md drift check** — compares immutable sections (First Contact Protocol, Rules) against the bootstrap backup. If content was altered, reports `status: "warning"` with the drifted section name. Note: Teaching Boundary, Tool Announcements, and MCP usage rules now live in `.claude/rules/` and are not subject to drift — they're version-controlled rule files, not generated content.
 
-**C. Progression.md size check** — after 15+ sessions, the Verlauf section gets too long for reliable parsing. Older entries are compressed, recent ones kept intact.
+**C. context.md staleness check** — if `context.md` is older than 7 days, reports a warning. Stale context means the previous session didn't update it properly.
 
-**D. Silent reporting** — if everything is fine, the learner sees nothing. If repairs were needed, they're logged to `.settings/coach/flags.md` for the coach.
+**Output:** `{ "status": "ok"|"warning"|"critical", "issues": [...] }`. Claude interprets the result and decides (silently repair or inform user). The script can be invoked via `state(action: "read", file: "integrity")` through the MCP server, or directly via `node .settings/hooks/integrity-check.js`.
 
 ### What it can and cannot catch
 
-The check catches **structural drift** — deleted rules, missing files, corrupted tables, bloated progression files. These are mechanically verifiable: compare file A to file B, check if file exists, count entries.
+The check catches **structural drift** — deleted rules, missing files, stale context. These are mechanically verifiable: compare file A to file B, check if file exists, check modification dates.
 
 It cannot catch **behavioral drift** — did Claude teach at the wrong pace? Did it ignore the motivation driver? Did it work on the learner's real project instead of the learning project? These require judgment, which is exactly what the coach layer is for.
 
@@ -193,17 +196,17 @@ Every check is a file comparison or existence check. No interpretation, no "does
 
 ### Scenarios that remain self-healing (no guardrails needed)
 
-**`/start` before profiling:** Handled by the router — `start.md` checks for `.settings/learner-profile.md` and routes to the interview if it doesn't exist. The integrity check in `start-session.md` never runs in this case.
+**`/start` before profiling:** Handled by the root skill's routing logic — `SKILL.md` checks for `.settings/learner-profile.md` via MCP and routes to `onboarding.md` if it doesn't exist. The integrity check still runs (via preprocessing) but only reports missing files as expected.
 
-**Learner reads the flow files:** The interview and session flows live in `.claude/commands/`, not in CLAUDE.md itself. If a learner finds and reads them, they're tech-savvy enough to understand what they are.
+**Learner reads the flow files:** The interview and session flows live in `.claude/skills/ai-learn/` as supporting files, not in CLAUDE.md itself. If a learner finds and reads them, they're tech-savvy enough to understand what they are.
 
-**Sessions log gets corrupted:** Claude can extract the last entry from a malformed markdown table. Additionally, the integrity check reconstructs the log from session READMEs if the table is empty despite existing sessions.
+**Sessions log gets corrupted:** Claude can extract the last entry from a malformed markdown table.
 
 **Session aborted mid-way:** Half-filled README is visible at next session start. Claude sees where things stopped and can continue.
 
 ---
 
-## Why progression.md exists
+## Why context.md exists
 
 ### The problem it solves
 
@@ -218,49 +221,66 @@ Three questions need a persistent answer:
 
 A predefined curriculum would need 9 paths minimum (3 tech levels × 3 paces) and becomes a constraint rather than a guide. But relying purely on Claude's judgment starts failing at session 10+ because accumulated context becomes fragmented.
 
-### The solution: progression.md as a living navigation document
+### The solution: context.md as a rolling summary
 
-`.settings/progression.md` sits between the learner profile (who) and the sessions log (what). It answers: **where are we, where are we going, and is it working?**
+`.settings/context.md` sits between the learner profile (who) and the sessions log (what). It answers: **where are we, where are we going, and is it working?**
+
+Unlike V1's append-only `progression.md` (which grew with every session and needed compression at >15 entries), context.md is **rewritten completely after every session**. It always contains ~30-50 lines — everything the next instance needs, nothing more.
 
 It contains:
-- **Phases**: 3-4 learning phases, personalized to the learner's world. These are hypotheses, not curriculum. They describe what the learner can DO at each stage, in their own domain language. Non-technical and semi-technical phases include Claude Code transition points (when `project/` gets its own CLAUDE.md).
-- **Current position**: Which phase, since when — or `Graduation erreicht — {date}` when the learner has graduated. This marker is what `/start` checks for three-way routing.
-- **Verlauf**: After every session, Claude appends an entry with observations, tempo check, phase check, and the planned next step. Pre-graduation entries include a **Graduation-Check** (5 observation signals for readiness). Post-graduation entries replace this with a **Post-Graduation-Check** (independence signals — is the learner working autonomously or falling back into student mode?).
+- **Lerner-Kurzprofil**: 2-3 sentences summarizing who the learner is, with a reference to the full profile.
+- **Aktueller Stand**: Current stage (Stufe 1-5), last session number, graduation status. The five stages come from the topics registry (`topics.md`) and represent content depth, not speed.
+- **Was bisher geschah**: A compact synthesis of the learning journey — what the learner can do, what the turning points were, what worked and what didn't. Max 10 lines. This replaces the V1 "Verlauf" (append-only per-session entries).
+- **Beobachtungen**: Current observations from the last 2-3 sessions — pace alignment, stage alignment, profile deviations.
+- **Nächste Session**: Planned topic, rationale, and any relevant notes (coach hints, gaps, special circumstances).
+- **Graduation-Signale** (pre-graduation only): Which of the 5 readiness signals have been observed, and since when.
 
-### Why phases are hypotheses
+### Why rolling instead of append
 
-Fixed phase templates ("Phase 1: Prompting basics, Phase 2: Prompt patterns, Phase 3: CLAUDE.md, Phase 4: MCPs") don't work. A non-technical electrician's Phase 4 should never be "MCPs" — it should be "eigenständig neue Aufgaben mit AI erschließen." And even that might be wrong once Claude sees how the learner actually progresses.
+1. **Each instance reads one file, not a history.** The next AI doesn't need "what happened in Session 3" — it needs "where we stand now."
+2. **No size problem.** context.md stays ~30-50 lines regardless of session count.
+3. **Forces synthesis.** Claude must summarize the overall state after every session, not just append a block. This produces better orientation for the next instance.
+4. **Sessions as archive.** Session details remain in `sessions/session-NN/README.md`. context.md is the pointer to the current state, not the archive.
 
-Phases are created after profiling based on templates per tech level, then translated into the learner's domain. After every session, Claude checks: does this phase still make sense? Are the phases themselves well-defined? If reality diverges from the hypothesis, Claude rewrites the phases — not the learner's behavior.
+### Why five stages instead of custom phases
 
-### Why every session, not every 3 sessions
+V1 created custom phases per learner ("Phase 1: Prompting basics" for one, "Phase 1: Claude Code als Partner" for another). This was conceptually elegant but had two problems:
 
-Profile dimensions (pace, tech level) only update after 2-3 sessions of consistent mismatch — you don't change someone's pace classification after one good session. But progression tracking needs tighter feedback: a topic that was planned for next session might be wrong after today's session revealed a gap. The "Nächster Schritt" must be assessed every time.
+1. **Claude had to invent phases.** The quality varied — sometimes phases were too vague, sometimes too specific.
+2. **No shared vocabulary.** Each learner's phases were unique, making it impossible to compare progress or build a topics registry.
 
-The profile update threshold (2-3 sessions of consistent evidence) is preserved — it's triggered by patterns in the Verlauf entries, not by a single observation.
+V2 uses five universal stages defined in the topics registry. The stages describe content depth, not speed:
+
+| Stage | Name | Core question |
+|---|---|---|
+| 1 | KI verstehen & prompten | "Was kann KI und wie rede ich mit ihr?" |
+| 2 | CC als Arbeitsumgebung | "Wie nutze ich CC produktiv?" |
+| 3 | CC konfigurieren | "Wie passe ich CC an mein Projekt an?" |
+| 4 | CC erweitern | "Wie baue ich eigene Tools in CC?" |
+| 5 | Eigene KI-Systeme | "Wie baue ich Dinge, die über CC hinausgehen?" |
+
+Stage and tech level are independent. A non-technical learner may graduate at Stage 2. A technical learner might skip Stage 1 entirely. Graduation typically falls between Stage 3 and 4, but the graduation signals — not the stage — decide.
 
 ### How responsibilities are split
 
-Without a dedicated progression document, pace observations would scatter across memory, session-end reviews, and the sessions log. `.settings/progression.md` bundles all progression tracking in one place:
-
-- **`.settings/progression.md`**: Phases, pace observations, phase checks, next steps — everything about trajectory
+- **`.settings/context.md`**: Current state, observations, next step — everything about trajectory. Rewritten every session.
 - **Memory**: General learnings (preferences, what resonated) — not progression tracking
 - **Sessions Log**: Compact lookup table of what happened — stays in CLAUDE.md
-- **`.settings/learner-profile.md`**: Who the learner is — updates only when `.settings/progression.md` shows consistent mismatch over 2-3 sessions
+- **`.settings/learner-profile.md`**: Who the learner is — updates only when context.md shows consistent mismatch over 2-3 sessions
 
 ### How it integrates
 
 Four touch points:
-1. **First Contact Protocol** (CLAUDE.md): Reads `.settings/coach/notes.md` — and via `/start`, also `.settings/progression.md`
-2. **Session start flows** (`start-session.md`, `start-graduated.md`): Orient step reads `.settings/progression.md`; Research step (conditional) searches Anthropic sources for current information; "Nächster Schritt" is the starting point for topic planning
-3. **Session end flows** (`end-session.md`, `end-graduated.md`): Update `.settings/progression.md` — observations, tempo/phase check, graduation or post-graduation check, next step
-4. **Coach review** (`.settings/coach/README.md`): Checklist item — "is the phase progression sensible?"
+1. **First Contact Protocol** (CLAUDE.md): Reads `.settings/coach/notes.md` — and via `/start`, also `.settings/context.md`
+2. **Session start flows** (`teach.md`, `coach.md`): Orient step reads context.md; Research step fetches topics.md and optionally searches Anthropic sources; "Nächste Session" is the starting point for topic planning
+3. **Session end flow** (`close.md`): Rewrites context.md completely — synthesizes the session into the overall state, updates stage if warranted, records observations and planned next step
+4. **Coach review** (`.settings/coach/README.md`): Checklist item — "is the stage progression sensible?"
 
 ### What it doesn't replace
 
 - `.settings/learner-profile.md`: Who the learner is. Identity, dimensions, motivation. Changes rarely.
 - Sessions Log: Compact reference of what happened. Changes every session but stays in CLAUDE.md for quick lookup.
-- `.settings/coach/flags.md`: Observations needing human judgment. Progression problems that Claude can resolve stay in `.settings/progression.md`; problems Claude can't resolve go to flags.
+- `.settings/coach/flags.md`: Observations needing human judgment. Progression issues that Claude can resolve stay in context.md; problems Claude can't resolve go to flags.
 
 ---
 
@@ -272,15 +292,19 @@ Claude reads CLAUDE.md at the start of every conversation. The bootstrap version
 
 ### Two-stage reduction
 
-The CLAUDE.md gets smaller in two ways:
+The CLAUDE.md gets smaller in three ways:
 
-1. **At bootstrap design time**: Session flows live in separate files under `.claude/commands/` — interview, session, graduated, and closure flows are loaded on demand by thin routers. The bootstrap CLAUDE.md only contains rules and config, not execution logic.
+1. **At bootstrap design time**: Session flows live as supporting files under `.claude/skills/ai-learn/`. Flows are loaded on demand by the root skill's routing logic.
 
-2. **After profiling**: Claude backs up the original as `.settings/CLAUDE.md.bootstrap`, fills in the `[ADAPT]` sections (replacing verbose comments with concrete values), and saves the reframing guide to `reference/profiling-guide.md` for later profile updates.
+2. **Rule modularization**: Teaching Boundary, Tool Announcements, and MCP usage rules are extracted into `.claude/rules/` — automatically loaded by Claude Code, no imports needed. The bootstrap CLAUDE.md only contains First Contact Protocol, learner config, and short references.
+
+3. **After profiling**: Claude backs up the original as `.settings/CLAUDE.md.bootstrap` and fills in the `[ADAPT]` sections (replacing verbose comments with concrete values).
+
+The result: ~70 lines in CLAUDE.md. Rules, flows, and config each live in their own space.
 
 ### Why the reframing guide needs to persist
 
-The reframing guide — the table that maps observations to behavioral descriptions — is needed whenever Claude updates the learner profile (which happens when `.settings/progression.md` shows consistent mismatch over 2-3 sessions). It lives in `reference/profiling-guide.md` so it's available when needed but not loaded every conversation.
+The reframing guide — the table that maps observations to behavioral descriptions — is needed whenever Claude updates the learner profile (which happens when context.md shows consistent mismatch over 2-3 sessions). It lives in `.claude/skills/ai-learn/profiling-guide.md` as a supporting file, referenced from both `onboarding.md` (initial profile creation) and `close.md` (profile updates at session end) via `${CLAUDE_SKILL_DIR}`. It's only loaded when needed, not every conversation.
 
 ### Safety
 
@@ -288,31 +312,33 @@ If the personalized CLAUDE.md gets corrupted or Claude fills the [ADAPT] section
 
 ---
 
-## Why one instance per session
+## Why session boundaries matter
 
-### The rule
+### The recommendation
 
-Each learning session runs in a fresh Claude instance. The user opens Claude, types `/start`, works through the session, and closes Claude when done. No multi-session conversations, no continuing from where a previous conversation left off.
+A learning session is one learning unit — typically one day, one topic. The user opens Claude, types `/start`, works through the session, and types `/end` when done. A fresh Claude instance per session is recommended but not enforced.
 
-### Why this matters
+V1 enforced "one instance = one session" as a hard rule. V2 softens this: context.md as a rolling summary makes the instance boundary less critical — whether the next `/start` happens in a fresh instance or a continuing conversation, context.md carries the state. The Stop hook reminds about unclosed sessions as a safety net.
 
-1. **Clean context window.** Claude reads the profile, progression.md, and coach notes from scratch every time. No stale conversation context bleeding between sessions. What Claude "remembers" comes from files, not from an increasingly compressed conversation history.
+### Why boundaries still matter
 
-2. **Reliable state.** The `/start` router delegates to a path-specific flow file. Pre-graduation: integrity check → orient → research (conditional) → plan → create folder → brief → update log. Post-graduation: orient → research → greet → work → session folder. Each flow is self-contained — Claude only reads the steps relevant to the current path. If Claude starts a session mid-conversation after other back-and-forth, it might skip steps or carry assumptions from earlier messages.
+1. **Clean context window.** Claude reads the profile, context.md, and coach notes from scratch every time. No stale conversation context bleeding between sessions. What Claude "remembers" comes from files, not from an increasingly compressed conversation history.
 
-3. **Session boundaries are real.** A session has a start (briefing), a middle (building), and an end (README, progression update, log update). Closing the instance enforces the end boundary. Without it, sessions blend into each other and the end-of-session protocol (which includes the critical progression.md update) might be skipped.
+2. **Reliable state.** The `/start` skill routes to a path-specific supporting file. Pre-graduation: integrity check (via preprocessing) → orient → research (conditional) → plan → create folder → brief → update log. Post-graduation: orient → research → greet → work → session folder. Each supporting file is self-contained — Claude only reads the steps relevant to the current path. If Claude starts a session mid-conversation after other back-and-forth, it might skip steps or carry assumptions from earlier messages.
+
+3. **Session boundaries are real.** A session has a start (briefing), a middle (building), and an end (README, context update, log update). Closing the instance enforces the end boundary. Without it, sessions blend into each other and the end-of-session protocol (which includes the critical context.md update) might be skipped.
 
 4. **Non-technical users need simple rules.** "Open Claude, type `/start`, close when done" is a ritual anyone can follow. "Continue the conversation, or start a new one, or type a command, or just say something" is a decision tree that creates confusion.
 
 ### What about the first session?
 
-The first session follows the same ritual: open Claude, type `/start`, close when done. The `/start` skill detects that no profile exists yet and routes to the interview automatically. The user doesn't need to know or do anything different.
+The first session follows the same ritual: open Claude, type `/start`, close when done. The root skill detects that no profile exists yet and routes to `onboarding.md` automatically. The user doesn't need to know or do anything different.
 
 ### What persists between instances
 
 Everything the learner needs is in files:
 - `.settings/learner-profile.md` — who they are
-- `.settings/progression.md` — where they are, where they're going, what to do next
+- `.settings/context.md` — where they are, where they're going, what to do next
 - `sessions/` — what they've done
 - `reference/` — what they've learned
 - Auto-memory — general learnings and preferences
@@ -327,26 +353,45 @@ The conversation itself is ephemeral. The files are the source of truth.
 
 The user types `/start` every time — first session and every session after. The user types `/end` when a session is done. Two commands, always the same. "Open Claude, type `/start`, close when done" — that's the entire ritual, from day one.
 
-### Router + flow files
+### Skill architecture (V2)
 
-Both skills are **thin routers** (~15 lines) that delegate to path-specific flow files. Claude only reads the file relevant to the current path — never the others.
+V2 replaces the V1 command-based routers with a proper Claude Code Skill at `.claude/skills/ai-learn/SKILL.md`. The `/start` and `/end` commands in `.claude/commands/` become thin one-liners that trigger the skill.
 
-**`/start` routes:**
+**Why a single skill with supporting files:** Claude Code discovers skills at the direct level under `.claude/skills/`. Nested sub-skills are not automatically discovered. The solution: one root skill (`ai-learn`) with supporting files that are loaded on demand — exactly like the V1 router pattern, but in the official Skill format.
 
-| Condition | Target file |
+**Root skill (`SKILL.md`) responsibilities:**
+1. **Preprocessing:** Runs the integrity check via `!`command`` syntax before Claude sees the prompt. The output (JSON status) is injected into context automatically.
+2. **MCP server check:** Verifies `state` tool availability (identical to V1).
+3. **Routing:** Checks learner state via MCP, loads the appropriate supporting file.
+4. **System rules:** References `.claude/rules/` (modular rule files, replacing inline CLAUDE.md rules).
+5. **Arguments forwarding:** `$ARGUMENTS` from `/start some topic` is passed to supporting files as topic override.
+
+**Frontmatter:**
+```yaml
+---
+name: ai-learn
+description: AI learning coach. Manages personalized sessions adapted to the learner's technical level and pace.
+disable-model-invocation: true
+---
+```
+
+`disable-model-invocation: true` prevents Claude from auto-triggering the skill. The routing logic requires MCP calls to check state — auto-triggering on "Hallo" would load the entire SKILL.md and cause uncontrolled routing. `/start` as explicit trigger is safer and consistent with the First Contact Protocol.
+
+**`/start` routes (via supporting files):**
+
+| Condition | Supporting file |
 |---|---|
-| No profile | `interview.md` (~185 lines) |
-| Graduated | `start-graduated.md` (~95 lines) |
-| Otherwise | `start-session.md` (~195 lines) |
+| No profile | `onboarding.md` — interview + profile + Session 01 |
+| Graduated | `coach.md` — post-graduation peer sessions |
+| Otherwise | `teach.md` — pre-graduation teaching sessions |
 
-**`/end` routes:**
+**`/end` loads:**
 
-| Condition | Target file |
+| Supporting file | Purpose |
 |---|---|
-| Graduated | `end-graduated.md` (~95 lines) |
-| Otherwise | `end-session.md` (~130 lines) |
+| `close.md` | Session closure (README, context.md, coach flags, graduation trigger) |
 
-### Why this split
+### Why this split (unchanged from V1)
 
 The original design packed all paths into a single file per skill. `start.md` was 268 lines containing the interview routing, the integrity check, the normal session flow, Session 01 guidance, graduation criteria, AND the post-graduation flow. Claude read all of it every time — even though only one path applied per session.
 
@@ -358,7 +403,13 @@ This created three problems:
 
 3. **Decision density per file.** A file with 3 tech levels × 3 paces × pre/post-graduation contains many decision branches. Splitting by path means each file only has the branches relevant to that path.
 
-The interview was already separate (loaded on demand by `/start`). The new architecture extends this pattern to all paths.
+V2 preserves this pattern. The supporting files replace the V1 flow files, each containing only the logic for its specific path.
+
+### Preprocessing vs. prompt-based integrity check
+
+V1 implemented the integrity check as prompt instructions in the session start flow — Claude had to read the instructions, execute the check steps, and interpret the results. V2 uses Claude Code's `!`command`` preprocessing syntax: the integrity check runs as a Node.js script **before** the skill content reaches Claude. Claude sees the JSON result directly in context — no instructions needed.
+
+This moves the integrity check from "Claude follows steps to check itself" to "a script checks the system and Claude reads the result." The check still runs at session start (fresh instance detects what the previous one broke), but now as a mechanical guarantee rather than a prompt-based hope.
 
 ### Why decision tables instead of prose
 
@@ -372,13 +423,13 @@ The flow files use tables for all conditional logic:
 
 Tables are faster to scan than paragraphs of if/then prose. Claude can look up the relevant row by matching the learner's dimensions, rather than parsing conditional sentences to find the applicable clause.
 
-### Why the integrity check is in `/start`, not `/end`
-
-See "Why an integrity check instead of blind trust" above. The short version: a fresh instance at session start can detect what the previous instance broke. The same instance at session end cannot reliably check itself. The integrity check lives in `start-session.md` — it only runs for returning pre-graduation learners (post-graduation and first-time paths don't need it).
-
 ### Why flow files don't repeat CLAUDE.md context
 
 The original `start.md` included a "Context: Two-dimension model" section re-explaining the dimensions. The flow files omit this — CLAUDE.md is always loaded and contains the system context. The flow files reference dimension values (via tables) without re-explaining what dimensions are. This reduces duplication and keeps flow files focused on execution.
+
+### Path references in supporting files
+
+Supporting files reference each other via `${CLAUDE_SKILL_DIR}` — the absolute path to the skill directory, resolved by Claude Code regardless of working directory. Example: `[profiling-guide.md](${CLAUDE_SKILL_DIR}/profiling-guide.md)`. This replaces the V1 pattern of hardcoded `.claude/commands/` paths.
 
 ---
 
@@ -388,34 +439,47 @@ The original `start.md` included a "Context: Two-dimension model" section re-exp
 bootstrap/
 ├── README.md                        → For users. Setup instructions, FAQ.
 ├── bootstrap.md                     → URL entry point: clone instructions for fresh Claude Code instances.
-├── CLAUDE.md                        → For Claude. System rules + learner config + MCP tool table.
+├── CLAUDE.md                        → For Claude. First Contact, learner config, short references (~70 lines).
 ├── DESIGN.md                        → For developers/AI. This file. Design rationale.
+├── topics.md                        → Topics registry: curated index of AI topics in 5 stages. Fetched by teach.md/coach.md via WebFetch.
 ├── .mcp.json                        → Project-local MCP server registration (auto-detected by Claude Code).
 ├── .gitignore                       → Standard ignores (node_modules, .env, .DS_Store, .settings/coach/)
 ├── .settings/
 │   ├── coach/
 │   │   └── README.md                → Coach workflow documentation.
+│   ├── hooks/
+│   │   ├── on-stop.js               → Stop-Hook: reminds about unclosed sessions.
+│   │   ├── boundary-check.js        → PreToolUse-Hook: blocks Write/Edit outside the project.
+│   │   └── integrity-check.js       → Integrity check: validates core files and CLAUDE.md drift.
 │   └── mcp-server/
 │       ├── package.json             → MCP server package (dependency: @modelcontextprotocol/sdk)
 │       └── index.js                 → MCP server: single `state` tool for all learner state I/O.
 └── .claude/
-    ├── settings.json                → Auto-approves ai-learn-state MCP tool.
-    └── commands/
-        ├── bootstrap.md             → Setup flow: cleanup, npm install, restart instructions.
-        ├── start.md                 → Router: routes to interview / graduated / session flow.
-        ├── start-session.md         → Flow: returning pre-graduation session (integrity check, orient, research, plan, brief).
-        ├── start-graduated.md       → Flow: post-graduation session (orient, research, greet, work together).
-        ├── interview.md             → Flow: first-time profiling interview + Session 01 guide.
-        ├── end.md                   → Router: routes to pre-grad / post-grad closure.
-        ├── end-session.md           → Flow: pre-graduation closure (README, progression, graduation trigger, flags).
-        └── end-graduated.md         → Flow: post-graduation closure (README, progression, post-grad check, flags).
+    ├── settings.json                → Auto-approves MCP tool + hooks config (Stop, PreToolUse).
+    ├── commands/
+    │   ├── bootstrap.md             → Setup flow: cleanup, npm install, restart instructions.
+    │   ├── start.md                 → Thin entry point: triggers ai-learn skill.
+    │   └── end.md                   → Thin entry point: loads close.md from ai-learn skill.
+    ├── rules/
+    │   ├── teaching-boundary.md     → Two project spaces rule (auto-loaded by Claude Code).
+    │   ├── tool-announcements.md    → Decision matrix + pacing rules (auto-loaded).
+    │   └── mcp-usage.md             → MCP state tool keys + usage rule (auto-loaded).
+    └── skills/
+        └── ai-learn/
+            ├── SKILL.md             → Root skill: preprocessing, MCP check, routing, system rules.
+            ├── onboarding.md        → Supporting file: interview + profile + Session 01.
+            ├── teach.md             → Supporting file: pre-graduation teaching sessions.
+            ├── coach.md             → Supporting file: post-graduation peer sessions.
+            ├── close.md             → Supporting file: session closure (README, context, flags).
+            ├── profiling-guide.md   → Supporting file: reframing guide for profile writing.
+            └── session-01-table.md  → Supporting file: decision table for first session.
 ```
 
 **Generated after profiling (inside `.settings/`):**
 - `.settings/learner-profile.md` — dual-audience learner profile
-- `.settings/progression.md` — living navigation document (phases, observations, next steps)
+- `.settings/context.md` — rolling summary (rewritten every session: current stage, observations, next step)
 - `.settings/CLAUDE.md.bootstrap` — backup of original CLAUDE.md before personalization
-- `reference/profiling-guide.md` — extracted from interview.md (reframing guide, profile structure)
+- `.settings/graduated` — empty flag file, created at graduation (existence = graduated)
 - `sessions/session-NN/README.md` — frozen session records
 
 **Coach layer** (optional — created by coach, not included in bootstrap):
@@ -556,15 +620,15 @@ The learning goal of AI-LERN is not just "understand AI" but **"work with Claude
 
 | Tech level | When does project/ get its own CLAUDE.md? | How? |
 |---|---|---|
-| Non-technical | Late (Phase 3-4) | Claude sets it up, learner uses it without understanding. "Ich hab dir was eingerichtet." Understanding comes later. |
-| Semi-technical | Mid-way (Phase 2-3) | Claude sets it up, explains roughly. Learner starts co-shaping. |
+| Non-technical | Late (Stage 3-4) | Claude sets it up, learner uses it without understanding. "Ich hab dir was eingerichtet." Understanding comes later. |
+| Semi-technical | Mid-way (Stage 2-3) | Claude sets it up, explains roughly. Learner starts co-shaping. |
 | Technical | Session 01 | Learner steers the setup or understands it immediately. |
 
 ### Why this matters
 
 The learner works inside a Claude Code environment from the start (this repo). That's the learning frame. `project/` becomes their OWN project — the place where they use Claude Code for THEIR tasks. For technical learners this happens immediately. For non-technical learners it happens gradually and implicitly.
 
-This means the phase templates in `.settings/progression.md` include Claude Code transition points per tech level. Non-technical phases include "Claude richtet project/CLAUDE.md ein, Lerner nutzt es implizit" in Phase 3. Technical phases start with "Claude Code als Partner" in Phase 1.
+The five stages in the topics registry reflect this progression. Stage 2 ("CC als Arbeitsumgebung") is where non-technical learners start using `project/` with Claude Code implicitly. Stage 3 ("CC konfigurieren") is where they begin to understand CLAUDE.md. Technical learners start at Stage 2 or 3 and work with `project/` as a proper CC environment from Session 01.
 
 ### What this is NOT
 
@@ -604,16 +668,18 @@ Asking "Do you understand what an instance is?" gets unreliable answers — espe
 - Do they correct or question Claude output unprompted?
 - Do they understand WHY CLAUDE.md exists (not just that it does)?
 
-These observations accumulate in `.settings/progression.md` Graduation-Check entries. Graduation is never triggered by a single session — it emerges across sessions. Exception: for technical + fast learners, a single session with strong, unambiguous signals on all 7 criteria may be sufficient.
+These observations accumulate in context.md's "Graduation-Signale" section. Graduation is never triggered by a single session — it emerges across sessions. Exception: for technical + fast learners, a single session with strong, unambiguous signals on all 7 criteria may be sufficient.
 
 ### How Graduation is triggered
 
 Three paths:
-1. **Claude suggests**: When readiness signals are consistent over 2-3 sessions, Claude suggests graduation to the learner (in `end-session.md` Step 5.5) and flags the coach.
+1. **Claude suggests**: When readiness signals are consistent over 2-3 sessions, Claude suggests graduation to the learner (in `close.md` Step 6) and flags the coach.
 2. **Coach triggers**: Via `.settings/coach/notes.md`, the coach can confirm, delay, or initiate graduation.
 3. **Learner asks**: If the learner says "I want to work on my own project," Claude checks readiness and responds.
 
-The graduation marker lives in `.settings/progression.md` under "Aktueller Stand": `Graduation erreicht — {date}`.
+The graduation marker has two representations:
+- **`.settings/graduated`**: An empty flag file whose existence signals graduation. Used by hooks (`boundary-check.js`) and the root skill routing for fast, mechanical checks.
+- **context.md "Aktueller Stand"**: Contains `Graduation: ja seit {date}` — the human-readable marker read by session flows.
 
 ### What changes after Graduation
 
@@ -625,11 +691,11 @@ The graduation marker lives in `.settings/progression.md` under "Aktueller Stand
 | Claude's role | Teacher | Sparring partner |
 | Session structure | Guided (Steps 1-7) | Flexible — learner drives |
 
-The Teaching Boundary rule in CLAUDE.md says "Never work on the learner's real-world project." This rule is **explicitly suspended** after Graduation via the Post-Graduation section in `/start`. The CLAUDE.md rule itself is not modified (it's protected by the integrity check) — instead, `/start` tells Claude that the suspension is intentional and by design. The CLAUDE.md rule protects pre-graduation learners from skipping the learning process; post-graduation learners have earned the right to work on their real project.
+The Teaching Boundary rule (`.claude/rules/teaching-boundary.md`) says "Never work on the learner's real-world project." This rule is **mechanically enforced** pre-graduation by the `boundary-check.js` PreToolUse hook, which blocks Write/Edit operations outside the project. After graduation, the hook checks for `.settings/graduated` and allows all paths. The rule file itself is not modified — the hook provides the enforcement, and the graduated flag file provides the suspension.
 
 ### What stays after Graduation
 
-The learning environment remains intact. Sessions and progression still get logged — in a lighter format. The learner can always come back to this folder and run `/start`. Graduation is not a one-way door.
+The learning environment remains intact. Sessions and context still get tracked — in a lighter format. The learner can always come back to this folder and run `/start`. Graduation is not a one-way door.
 
 If a graduated learner consistently struggles across 2-3 post-graduation sessions (not setting own tasks, deferring everything to Claude, falling back into student mode), Claude flags this to the coach. The coach can revert graduation.
 
@@ -713,7 +779,7 @@ The weekly review checklist lives in `.settings/coach/README.md` — the same di
 
 ### What is NOT a flag
 
-Routine observations (pace mismatches, learning patterns, self-assessment corrections) are tracked in `.settings/progression.md` and resolved through profile updates after 2-3 sessions of consistent evidence.
+Routine observations (pace mismatches, learning patterns, self-assessment corrections) are tracked in `.settings/context.md` and resolved through profile updates after 2-3 sessions of consistent evidence.
 
 Flags are for what Claude cannot resolve alone:
 - Repeated failure despite its own correction attempts (something structural is wrong)
@@ -728,9 +794,9 @@ The instruction "only flag what you can't resolve yourself" is the critical guar
 The coach layer touches four places in the existing system:
 
 1. **First Contact Protocol** (CLAUDE.md): Checks for `.settings/coach/notes.md` and reads it
-2. **Session start flows** (`start-session.md`, `start-graduated.md`): Orient step reads `.settings/coach/notes.md`
-3. **Session end flows** (`end-session.md`, `end-graduated.md`): Coach flags step writes to `.settings/coach/flags.md` if needed
-4. **Graduation trigger** (`end-session.md`): Flags graduation to coach in `.settings/coach/flags.md`
+2. **Session start flows** (`teach.md`, `coach.md`): Orient step reads `.settings/coach/notes.md`
+3. **Session end flow** (`close.md`): Coach flags step writes to `.settings/coach/flags.md` if needed
+4. **Graduation trigger** (`close.md`): Flags graduation to coach in `.settings/coach/flags.md`
 
 Each touch point is a single line or short paragraph. The coach layer is integrated, not bolted on.
 
@@ -799,15 +865,80 @@ Claude appends entries at session end in this format:
 
 ---
 
+## Hooks infrastructure
+
+Hooks solve problems that were previously implemented as prompt instructions in V1. They guarantee behavior mechanically instead of requesting it.
+
+**Principle:** Hooks only for system-internal enforcement. User-facing behavior (tool announcements, pacing) stays prompt-driven because it's part of the learning experience.
+
+### Stop-Hook: Session closure reminder
+
+**Problem:** If the learner forgets `/end`, context.md is not updated, no session README is finalized, no coach flags are written. The next instance starts with stale state.
+
+**Solution:** `.settings/hooks/on-stop.js` runs when Claude finishes responding. It checks whether the last `sessions/session-NN/README.md` was completed (contains "Key Takeaways"). If not, it returns `{ "decision": "block", "reason": "Session NN wurde nicht abgeschlossen..." }` — which prevents Claude from stopping and prompts it to ask the user about running `/end`.
+
+**What it does NOT do:** It doesn't close the session automatically. The user keeps control. The hook is a safety net, not an autopilot.
+
+### PreToolUse-Hook: Teaching boundary enforcement
+
+**Problem:** "Never work on the learner's real project" is a prompt rule. Over a long session, Claude can forget it — especially if the user explicitly asks.
+
+**Solution:** `.settings/hooks/boundary-check.js` runs before every Write/Edit tool call. It receives the tool input as JSON on stdin (including `tool_input.file_path`), resolves the path, and checks:
+
+1. Is the learner graduated? (`fs.existsSync('.settings/graduated')`) → Allow everything
+2. Is the target path within the project root? → Allow
+3. Otherwise → Block via `permissionDecision: "deny"`
+
+**Why only Write/Edit:** Read is harmless — the learner may read anywhere. Write/Edit outside the project is the problem.
+
+**Graduation flag:** Instead of parsing context.md (fragile), the hook checks `fs.existsSync('.settings/graduated')`. The flag file is written by the close skill when graduation occurs.
+
+### Integrity check as preprocessing script
+
+The integrity check moved from a 15-point prompt instruction (V1) to a standalone Node.js script (`.settings/hooks/integrity-check.js`). See "Why an integrity check instead of blind trust" above for the rationale.
+
+In V2, the script runs via Claude Code's `!`command`` preprocessing syntax in the root skill (`SKILL.md`). The command `!`node ${CLAUDE_SKILL_DIR}/../../../.settings/hooks/integrity-check.js`` executes before the skill content reaches Claude. The JSON output is injected directly into context — Claude reads the result without needing instructions to run the check. The script can also be invoked via the MCP server's `integrity` key or directly via `node .settings/hooks/integrity-check.js`.
+
+### Hook configuration
+
+Hooks are configured in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "node .settings/hooks/on-stop.js" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "node .settings/hooks/boundary-check.js" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Stop hooks don't support matchers (always fire). PreToolUse hooks match on tool name via regex (`Write|Edit`).
+
+---
+
 ## MCP-based learner state
 
 ### The problem
 
 Claude Code's default file tools (Read, Write, Edit) have two properties that hurt the learning experience:
 
-1. **Permission prompts.** Every file write requires user confirmation. A single `/end` closure writes to 4-6 files (session README, progression, CLAUDE.md sessions log, possibly coach flags, possibly profile update, possibly reference page). That's 4-6 approval dialogs for housekeeping the learner doesn't care about.
+1. **Permission prompts.** Every file write requires user confirmation. A single `/end` closure writes to 4-6 files (session README, context.md, CLAUDE.md sessions log, possibly coach flags, possibly profile update, possibly reference page). That's 4-6 approval dialogs for housekeeping the learner doesn't care about.
 
-2. **Visibility.** The learner sees the full content of every file being read or written. This breaks the dual-audience design: `.settings/learner-profile.md` contains behavioral reframing ("needs confirmation at every step"), `.settings/progression.md` contains raw observations ("misapplied concept despite correction"), `.settings/coach/flags.md` contains things explicitly meant to be hidden. A curious learner scrolling through tool output sees all of it.
+2. **Visibility.** The learner sees the full content of every file being read or written. This breaks the dual-audience design: `.settings/learner-profile.md` contains behavioral reframing ("needs confirmation at every step"), `.settings/context.md` contains raw observations ("misapplied concept despite correction"), `.settings/coach/flags.md` contains things explicitly meant to be hidden. A curious learner scrolling through tool output sees all of it.
 
 Both problems get worse over time. Early sessions write fewer files. By session 5+, every `/start` reads 3-4 files and every `/end` writes 4-6. The approval fatigue compounds. And the more sessions exist, the more sensitive content accumulates in state files.
 
@@ -824,13 +955,14 @@ File keys map to hardcoded paths — no arbitrary file access:
 | Key | File | Allowed actions |
 |---|---|---|
 | `profile` | `.settings/learner-profile.md` | read, write |
-| `progression` | `.settings/progression.md` | read, write |
+| `context` | `.settings/context.md` | read, write |
 | `coach-notes` | `.settings/coach/notes.md` | read |
 | `coach-flags` | `.settings/coach/flags.md` | append |
 | `claude-md` | `CLAUDE.md` | read, write |
 | `bootstrap` | `.settings/CLAUDE.md.bootstrap` | read, write (one-time) |
 | `session-NN` | `sessions/session-{NN}/README.md` | read, write |
 | `ref-{name}` | `reference/{name}.md` | read, write |
+| `integrity` | *(runs `.settings/hooks/integrity-check.js`)* | read |
 
 ### Why these restrictions
 
@@ -851,17 +983,17 @@ MCP tool calls don't show file content in the chat. The learner sees "Claude use
 ### Integration
 
 - `.mcp.json` registers the MCP server (auto-detected by Claude Code, no manual setup)
-- `.claude/settings.json` auto-approves the `state` tool (no permission prompts)
-- CLAUDE.md § "Learner State — MCP Tools" contains the key table and the rule: "Never use Read/Write/Edit for these files"
-- All flow files reference CLAUDE.md § Learner State at the top
-- Routers (`start.md`, `end.md`) use `state(action: "read", file: "profile")` / `state(action: "read", file: "progression")` for routing decisions
+- `.claude/settings.json` auto-approves the `state` tool (no permission prompts) and configures hooks (Stop, PreToolUse)
+- `.claude/rules/mcp-usage.md` contains the key table and the rule: "Never use Read/Write/Edit for these files"
+- All supporting files reference `.claude/rules/mcp-usage.md` for the state tool contract
+- The root skill (`SKILL.md`) uses `state(action: "read", file: "profile")` / `state(action: "read", file: "context")` for routing decisions
 - Bootstrap runs `npm install` in `.settings/mcp-server/` during setup
 
 ---
 
 ## Known limitations
 
-1. **Claude as pedagogue is unproven.** The CLAUDE.md gives good teaching instructions, but whether Claude follows them consistently across many sessions and conversation boundaries is unknown. The integrity check at `/start` catches structural drift (deleted rules, missing files, corrupted state) but cannot detect behavioral drift (wrong pace, ignored motivation drivers). Auto-memory helps but isn't perfect.
+1. **Claude as pedagogue is unproven.** The CLAUDE.md gives good teaching instructions, but whether Claude follows them consistently across many sessions and conversation boundaries is unknown. The integrity check (`.settings/hooks/integrity-check.js`, invocable via MCP `integrity` key) catches structural drift (deleted rules, missing files, stale context) but cannot detect behavioral drift (wrong pace, ignored motivation drivers). Auto-memory helps but isn't perfect.
 
 2. **The system requires Claude Code.** This is a CLI tool that runs in a terminal. Non-technical users who are uncomfortable with terminals need a human coach for setup. The bootstrap doesn't solve this — it's a conscious scope boundary.
 
