@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "ai-learn-state": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/mcp-server/index.js"]
+      "command": "sh",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/mcp-server/start.sh"]
     }
   }
 }
