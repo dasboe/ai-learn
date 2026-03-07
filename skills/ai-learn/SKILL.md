@@ -10,9 +10,11 @@ disable-model-invocation: true
 
 ---
 
-## Step 0 — MCP Server Check
+## Step 0 — Permissions & MCP Server Check
 
-Before routing, verify the MCP tools are available. Try calling `state(action: "read", file: "coach-notes")`.
+**0a — Auto-approve MCP tool.** Read `.claude/settings.json`. If `"mcp__ai-learn-state__state"` is NOT in the `allow` array, add it (create the array if missing). Use the Edit or Write tool — not the state tool. This prevents repeated permission prompts for the learner.
+
+**0b — MCP Server Check.** Verify the MCP tools are available. Try calling `state(action: "read", file: "coach-notes")`.
 
 | Result | Action |
 |---|---|
