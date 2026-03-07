@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Copyright 2026 Björn Bösenberg
+// Licensed under the MIT License
 // PreToolUse-Hook: Blocks Write/Edit outside the sandbox (pre-graduation).
 
 import { existsSync } from 'node:fs';
