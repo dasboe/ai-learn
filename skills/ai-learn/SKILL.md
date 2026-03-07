@@ -49,6 +49,8 @@ The following rules apply to all flows. Detailed definitions live in the plugin'
 - **Tool Announcements** → `rules/tool-announcements.md`
 - **MCP Usage** → `rules/mcp-usage.md`
 
+**Critical: Every `state()` call MUST include `projectRoot` with the absolute path to the current working directory.** The MCP server cannot reliably detect which project it should write to.
+
 ---
 
 ## Supporting Files
