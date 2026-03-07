@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Copyright 2026 Björn Bösenberg
+// Licensed under the MIT License
 // Stop-Hook: Checks if a session was not properly closed.
 // Outputs decision:block to prevent Claude from stopping if session is open.
 

@@ -87,4 +87,6 @@ You learn to work with AI by working with AI. Every session produces something r
 
 ---
 
+Copyright 2026 Björn Bösenberg. Licensed under [MIT](LICENSE).
+
 Created by [@dasboe](https://github.com/dasboe) — built with [Claude Code](https://docs.anthropic.com/en/docs/claude-code).

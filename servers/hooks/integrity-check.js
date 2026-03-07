@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Copyright 2026 Björn Bösenberg
+// Licensed under the MIT License
 // Integrity-Check: Validates core files and CLAUDE.md drift.
 // Called via MCP integrity key or directly.
 
