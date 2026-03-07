@@ -16,9 +16,9 @@ Each session runs in a fresh Claude instance. At the start of every conversation
 
 1. If `.settings/coach/notes.md` exists → use `state(action: "read", file: "coach-notes")` to read it silently. Coach instructions apply to the entire conversation.
 2. If `.settings/context.md` exists → use `state(action: "read", file: "context")` to read it silently.
-3. Prompt the user to type `/start`.
+3. Prompt the user to type `/ai-learn:start`.
 
-The `/start` skill handles everything. Do not start teaching, interviewing, or planning without it.
+The `/ai-learn:start` skill handles everything. Do not start teaching, interviewing, or planning without it.
 
 For profile updates after profiling, see `.settings/profiling-guide.md`.
 
@@ -43,10 +43,10 @@ For profile updates after profiling, see `.settings/profiling-guide.md`.
 
 ## Rules
 
-- Eine Session = eine Lerneinheit. `/start` am Anfang, `/end` am Ende. Wenn `/end` vergessen wird, erinnert der Stop-Hook.
-- Always wait for `/start` before doing anything — don't begin teaching, interviewing, or planning on your own
-- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files — see `.claude/rules/mcp-usage.md`
-- Announce tool use to the learner before triggering permission prompts — see `.claude/rules/tool-announcements.md`
+- Eine Session = eine Lerneinheit. `/ai-learn:start` am Anfang, `/ai-learn:end` am Ende. Wenn `/ai-learn:end` vergessen wird, erinnert der Stop-Hook.
+- Always wait for `/ai-learn:start` before doing anything — don't begin teaching, interviewing, or planning on your own
+- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files
+- Announce tool use to the learner before triggering permission prompts
 - Read `.settings/coach/notes.md` at session start if it exists — coach instructions override defaults
 - Match the user's language in all communication
 - Never assume pace from tech level — check the profile
@@ -60,11 +60,7 @@ For profile updates after profiling, see `.settings/profiling-guide.md`.
 
 ## Skills
 
-Skills: `.claude/skills/ai-learn/` — Entry Points: `/start`, `/end`
-
-## Hooks
-
-Hooks: Stop (Session-Sicherung), PreToolUse (Teaching Boundary) — konfiguriert in `.claude/settings.json`
+Plugin: `ai-learn` — Entry Points: `/ai-learn:start`, `/ai-learn:end`
 
 ---
 
