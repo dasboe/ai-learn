@@ -45,7 +45,7 @@ For profile updates after profiling, see `.settings/profiling-guide.md`.
 
 - Eine Session = eine Lerneinheit. `/ai-learn:start` am Anfang, `/ai-learn:end` am Ende. Wenn `/ai-learn:end` vergessen wird, erinnert der Stop-Hook.
 - Always wait for `/ai-learn:start` before doing anything — don't begin teaching, interviewing, or planning on your own
-- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files
+- Use the `state` MCP tool (not Read/Write/Edit) for all learner state files — always pass `projectRoot` with the absolute project path
 - Announce tool use to the learner before triggering permission prompts
 - Read `.settings/coach/notes.md` at session start if it exists — coach instructions override defaults
 - Match the user's language in all communication

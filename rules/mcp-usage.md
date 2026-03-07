@@ -4,8 +4,10 @@ All learner state files are managed through the `ai-learn-state` MCP server's `s
 **Never use Read/Write/Edit tools for these files — always use `state`:**
 
 ```
-state(action: "read"|"write"|"append", file: "<key>", content?: "<text>")
+state(action: "read"|"write"|"append", file: "<key>", content?: "<text>", projectRoot: "<absolute path>")
 ```
+
+**Always pass `projectRoot`** with the absolute path to the current project directory. The MCP server cannot reliably detect which project it should write to — `projectRoot` ensures files land in the correct location.
 
 | Key | File | Allowed actions |
 |---|---|---|
