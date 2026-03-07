@@ -6,16 +6,21 @@ import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 
-// In plugin context: user data lives in CWD, not relative to script location
-const PROJECT_ROOT = process.cwd();
-
 // Integrity-check script lives in the plugin cache, next to mcp-server
 const PLUGIN_ROOT = dirname(new URL(import.meta.url).pathname);
 const INTEGRITY_SCRIPT = join(PLUGIN_ROOT, "../hooks/integrity-check.js");
 
-function resolveSafe(relativePath) {
-  const full = join(PROJECT_ROOT, relativePath);
-  if (!full.startsWith(PROJECT_ROOT)) {
+// Default project root: CWD fallback for when no projectRoot is passed
+const DEFAULT_ROOT = process.cwd();
+
+function getProjectRoot(projectRoot) {
+  return projectRoot || DEFAULT_ROOT;
+}
+
+function resolveSafe(projectRoot, relativePath) {
+  const root = getProjectRoot(projectRoot);
+  const full = join(root, relativePath);
+  if (!full.startsWith(root)) {
     throw new Error("Path escapes project root");
   }
   return full;
@@ -43,9 +48,9 @@ function resolvePath(file) {
 }
 
 // Run integrity-check.js and return result
-function runIntegrityCheck() {
+function runIntegrityCheck(projectRoot) {
   try {
-    const result = execSync(`node "${INTEGRITY_SCRIPT}"`, { cwd: PROJECT_ROOT, encoding: "utf-8" });
+    const result = execSync(`node "${INTEGRITY_SCRIPT}"`, { cwd: getProjectRoot(projectRoot), encoding: "utf-8" });
     return result.trim();
   } catch (e) {
     return JSON.stringify({ status: "error", message: e.message });
@@ -61,24 +66,25 @@ const server = new McpServer({
 
 server.tool(
   "state",
-  "Read, write, or append learner state files. Keys: profile, context, coach-notes, coach-flags, claude-md, bootstrap, session-NN, ref-{name}, integrity (read-only, runs integrity check)",
+  "Read, write, or append learner state files. Always pass projectRoot with the absolute path to the learner's project directory. Keys: profile, context, coach-notes, coach-flags, claude-md, bootstrap, session-NN, ref-{name}, integrity (read-only, runs integrity check)",
   {
     action: z.enum(["read", "write", "append"]),
     file: z.string().describe("File key: profile, context, coach-notes, coach-flags, claude-md, bootstrap, session-01, ref-some-name, integrity"),
     content: z.string().optional().describe("Content to write/append (required for write/append)"),
+    projectRoot: z.string().optional().describe("Absolute path to the learner's project directory"),
   },
-  async ({ action, file, content }) => {
+  async ({ action, file, content, projectRoot }) => {
     // Integrity check: read-only, runs script
     if (file === "integrity") {
       if (action !== "read") {
         return { content: [{ type: "text", text: "Error: integrity key is read-only." }] };
       }
-      const result = runIntegrityCheck();
+      const result = runIntegrityCheck(projectRoot);
       return { content: [{ type: "text", text: result }] };
     }
 
     const relativePath = resolvePath(file);
-    const full = resolveSafe(relativePath);
+    const full = resolveSafe(projectRoot, relativePath);
 
     if (action === "read") {
       try {
