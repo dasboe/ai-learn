@@ -9,3 +9,7 @@ node_modules/
 sessions/
 project/
 reference/
+
+# USS (local development)
+specs/
+.claude/

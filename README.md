@@ -20,7 +20,7 @@ A Claude Code plugin that turns Claude into your personal AI tutor. It adapts to
 /plugin install ai-learn@ai-learn-marketplace
 ```
 
-Restart Claude Code, then type `/ai-learn:start`.
+Then type `/ai-learn:start`.
 
 That's it. Claude interviews you once, then every session starts with `/ai-learn:start`.
 
